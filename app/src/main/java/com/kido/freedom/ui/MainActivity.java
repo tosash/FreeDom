@@ -1,34 +1,71 @@
 package com.kido.freedom.ui;
 
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.graphics.BitmapFactory;
+import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.telephony.TelephonyManager;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.kido.freedom.R;
 import com.kido.freedom.drawer.NavigationDrawerCallbacks;
 import com.kido.freedom.drawer.NavigationDrawerFragment;
+import com.kido.freedom.model.Device;
+
+import java.io.IOException;
 
 
-public class MainActivity extends ActionBarActivity
+public class MainActivity extends AppCompatActivity
         implements NavigationDrawerCallbacks {
 
-    /**
-     * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
-     */
+    public static final String EXTRA_MESSAGE = "message";
+    public static final String PROPERTY_REG_ID = "registration_id";
+    private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
+    private static final String PROPERTY_APP_VERSION = "appVersion";
+    private final static String TAG = "LaunchActivity";
+    public Device curDevice;
+    protected String SENDER_ID = "389628942309";
+    private GoogleCloudMessaging gcm = null;
+    private String regid = null;
+    private Context fContext = null;
     private NavigationDrawerFragment mNavigationDrawerFragment;
     private Toolbar mToolbar;
+
+    private static int getAppVersion(Context context) {
+        try {
+            PackageInfo packageInfo = context.getPackageManager()
+                    .getPackageInfo(context.getPackageName(), 0);
+            return packageInfo.versionCode;
+        } catch (PackageManager.NameNotFoundException e) {
+            throw new RuntimeException("Could not get package name: " + e);
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        fContext = getApplicationContext();
         mToolbar = (Toolbar) findViewById(R.id.toolbar_actionbar);
         setSupportActionBar(mToolbar);
+
+
+//        initDesign();
+
 
         mNavigationDrawerFragment = (NavigationDrawerFragment)
                 getFragmentManager().findFragmentById(R.id.fragment_drawer);
@@ -36,8 +73,159 @@ public class MainActivity extends ActionBarActivity
         // Set up the drawer.
         mNavigationDrawerFragment.setup(R.id.fragment_drawer, (DrawerLayout) findViewById(R.id.drawer), mToolbar);
         // populate the navigation drawer
+
+
         mNavigationDrawerFragment.setUserData("John Doe", "johndoe@doe.com", BitmapFactory.decodeResource(getResources(), R.drawable.avatar));
+
+        initDevice();
     }
+
+    protected void initDevice() {
+        curDevice = new Device();
+        curDevice.setpModelAndVersionDevice(getDeviceName());
+        curDevice.setpDeviceId(getDeviceId());
+        initGCM();
+    }
+
+    public String getDeviceName() {
+
+        String manufacturer = Build.MANUFACTURER;
+        String model = Build.MODEL;
+
+        if (model.startsWith(manufacturer)) {
+            return capitalize(model);
+        } else {
+            return capitalize(manufacturer) + " " + model;
+        }
+    }
+
+    private String getAndroidVersion() {
+        return android.os.Build.VERSION.RELEASE;
+    }
+
+    private String capitalize(String s) {
+        if (s == null || s.length() == 0) {
+            return "";
+        }
+        char first = s.charAt(0);
+        if (Character.isUpperCase(first)) {
+            return s;
+        } else {
+            return Character.toUpperCase(first) + s.substring(1);
+        }
+    }
+
+    private String getDeviceId() {
+        String deviceId = "";
+        final TelephonyManager mTelephony = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
+        if (mTelephony.getDeviceId() != null) {
+            deviceId = mTelephony.getDeviceId();
+        } else {
+            deviceId = Settings.Secure.getString(fContext.getContentResolver(), Settings.Secure.ANDROID_ID);
+        }
+        return deviceId;
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        checkPlayServices();
+    }
+
+    private boolean checkPlayServices() {
+        int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
+        if (resultCode != ConnectionResult.SUCCESS) {
+            if (GooglePlayServicesUtil.isUserRecoverableError(resultCode)) {
+                GooglePlayServicesUtil.getErrorDialog(resultCode, this,
+                        PLAY_SERVICES_RESOLUTION_REQUEST).show();
+            } else {
+                Log.d(TAG, "This device is not supported - Google Play Services.");
+                finish();
+            }
+            return false;
+        }
+        return true;
+    }
+
+    private void initGCM() {
+
+
+        if (checkPlayServices()) {
+            gcm = GoogleCloudMessaging.getInstance(this);
+            regid = getRegistrationId(fContext);
+
+            if (regid.isEmpty()) {
+                registerInBackground();
+            }
+        } else {
+            Log.d(TAG, "No valid Google Play Services APK found.");
+        }
+
+    }
+
+    private void storeRegistrationId(Context context, String regId) {
+        final SharedPreferences prefs = getGCMPreferences(context);
+        int appVersion = getAppVersion(context);
+        Log.i(TAG, "Saving regId on app version " + appVersion);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString(PROPERTY_REG_ID, regId);
+        editor.putInt(PROPERTY_APP_VERSION, appVersion);
+        editor.commit();
+    }
+
+    private String getRegistrationId(Context context) {
+        final SharedPreferences prefs = getGCMPreferences(context);
+        String registrationId = prefs.getString(PROPERTY_REG_ID, "");
+        if (registrationId.isEmpty()) {
+            Log.d(TAG, "Registration ID not found.");
+            return "";
+        }
+        int registeredVersion = prefs.getInt(PROPERTY_APP_VERSION, Integer.MIN_VALUE);
+        int currentVersion = getAppVersion(context);
+        if (registeredVersion != currentVersion) {
+            Log.d(TAG, "App version changed.");
+            return "";
+        }
+        return registrationId;
+    }
+
+    private SharedPreferences getGCMPreferences(Context context) {
+        return getSharedPreferences(MainActivity.class.getSimpleName(),
+                Context.MODE_PRIVATE);
+    }
+
+
+    private void registerInBackground() {
+        new AsyncTask<String, Void, String>() {
+
+            @Override
+            protected String doInBackground(String... params) {
+                String msg = "";
+                try {
+                    if (gcm == null) {
+                        gcm = GoogleCloudMessaging.getInstance(MainActivity.this);
+                    }
+                    regid = gcm.register(SENDER_ID);
+                    Log.i(this.toString(), "regId = " + regid);
+
+                    curDevice.setpPushNotificationToken(regid);
+                    storeRegistrationId(fContext, regid);
+
+                    msg = regid;
+                } catch (IOException ex) {
+                    msg = "Error :" + ex.getMessage();
+                }
+                return msg;
+            }
+
+            @Override
+            protected void onPostExecute(String msg) {
+                // setting registration id in edit text.
+            }
+
+        }.execute(null, null, null);
+    }
+
 
     @Override
     public void onNavigationDrawerItemSelected(int position) {
