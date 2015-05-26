@@ -37,4 +37,5 @@ dependencies {
     compile 'com.android.support:recyclerview-v7:22.1.1'
     apt 'com.bluelinelabs:logansquare-compiler:1.1.0'
     compile 'com.bluelinelabs:logansquare:1.1.0'
+    compile 'com.google.android.gms:play-services:7.3.0'
 }

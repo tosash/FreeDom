@@ -1,4 +1,4 @@
-package com.kido.freedom;
+package com.kido.freedom.drawer;
 
 
 import android.graphics.drawable.Drawable;

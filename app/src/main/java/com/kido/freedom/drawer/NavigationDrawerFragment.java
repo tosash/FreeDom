@@ -1,4 +1,4 @@
-package com.kido.freedom;
+package com.kido.freedom.drawer;
 
 import android.app.Activity;
 import android.app.Fragment;
@@ -26,6 +26,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.kido.freedom.R;
 
 import java.util.ArrayList;
 import java.util.List;

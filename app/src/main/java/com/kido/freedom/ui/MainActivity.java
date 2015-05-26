@@ -1,4 +1,4 @@
-package com.kido.freedom;
+package com.kido.freedom.ui;
 
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -8,6 +8,10 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
+
+import com.kido.freedom.R;
+import com.kido.freedom.drawer.NavigationDrawerCallbacks;
+import com.kido.freedom.drawer.NavigationDrawerFragment;
 
 
 public class MainActivity extends ActionBarActivity
