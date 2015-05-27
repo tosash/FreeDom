@@ -1,25 +1,36 @@
 package com.kido.freedom.model;
 
-import com.bluelinelabs.logansquare.annotation.JsonField;
-import com.bluelinelabs.logansquare.annotation.JsonObject;
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
 
-@JsonObject
 public class Device {
+    @SerializedName("ModelAndVersionPhone")
+    @Expose(serialize = true, deserialize = false)
+    private String pModelAndVersionDevice;
 
-    @JsonField(name = "ModelAndVersionPhone")
-    public String pModelAndVersionDevice;
+    @SerializedName("PhoneId")
+    @Expose(serialize = true, deserialize = false)
+    private String pDeviceId;
 
-    @JsonField(name = "PhoneId")
-    public String pDeviceId;
+    @SerializedName("PushNotificationToken")
+    @Expose(serialize = true, deserialize = false)
+    private String pPushNotificationToken;
 
-    @JsonField(name = "PushNotificationToken")
-    public String pPushNotificationToken;
+    @SerializedName("TypePhone")
+    @Expose(serialize = true, deserialize = false)
+    private String pTypeDevice = "1";
 
-    @JsonField(name = "TypePhone")
-    public int pTypeDevice = 1;
+    @SerializedName("Value")
+    @Expose(serialize = false, deserialize = true)
+    private String profileId;
 
-    @JsonField (name = "Value")
-    public double profileId;
+    @SerializedName("Message")
+    @Expose(serialize = false, deserialize = true)
+    private String responceMessage;
+
+    @SerializedName("StatusResponse")
+    @Expose(serialize = false, deserialize = true)
+    private String statusResponse;
 
 
     public String getpModelAndVersionDevice() {
@@ -30,28 +41,12 @@ public class Device {
         this.pModelAndVersionDevice = pModelAndVersionDevice;
     }
 
-    public int getpTypeDevice() {
-        return pTypeDevice;
+    public String getStatusResponse() {
+        return statusResponse;
     }
 
-    public void setpTypeDevice(int pTypeDevice) {
-        this.pTypeDevice = pTypeDevice;
-    }
-
-    public double getProfileId() {
-        return profileId;
-    }
-
-    public void setProfileId(double profileId) {
-        this.profileId = profileId;
-    }
-
-    public String getpPushNotificationToken() {
-        return pPushNotificationToken;
-    }
-
-    public void setpPushNotificationToken(String pPushNotificationToken) {
-        this.pPushNotificationToken = pPushNotificationToken;
+    public void setStatusResponse(String statusResponse) {
+        this.statusResponse = statusResponse;
     }
 
     public String getpDeviceId() {
@@ -62,5 +57,35 @@ public class Device {
         this.pDeviceId = pDeviceId;
     }
 
+    public String getpPushNotificationToken() {
+        return pPushNotificationToken;
+    }
 
+    public void setpPushNotificationToken(String pPushNotificationToken) {
+        this.pPushNotificationToken = pPushNotificationToken;
+    }
+
+    public String getpTypeDevice() {
+        return pTypeDevice;
+    }
+
+    public void setpTypeDevice(String pTypeDevice) {
+        this.pTypeDevice = pTypeDevice;
+    }
+
+    public String getProfileId() {
+        return profileId;
+    }
+
+    public void setProfileId(String profileId) {
+        this.profileId = profileId;
+    }
+
+    public String getResponceMessage() {
+        return responceMessage;
+    }
+
+    public void setResponceMessage(String responceMessage) {
+        this.responceMessage = responceMessage;
+    }
 }

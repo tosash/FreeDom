@@ -42,7 +42,7 @@ public class VolleySingleton {
 		getRequestQueue();
 		if (mImageLoader == null) {
 			mImageLoader = new ImageLoader(this.mRequestQueue,
-					new LruBitmapCache());
+					new BitmapLruCache());
 		}
 		return this.mImageLoader;
 	}

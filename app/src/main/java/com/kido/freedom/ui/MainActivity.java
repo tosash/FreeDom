@@ -19,12 +19,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
-import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.VolleyLog;
-import com.android.volley.toolbox.JsonObjectRequest;
-import com.bluelinelabs.logansquare.LoganSquare;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
@@ -32,9 +28,8 @@ import com.kido.freedom.R;
 import com.kido.freedom.drawer.NavigationDrawerCallbacks;
 import com.kido.freedom.drawer.NavigationDrawerFragment;
 import com.kido.freedom.model.Device;
-import com.kido.freedom.utils.AppController;
-
-import org.json.JSONObject;
+import com.kido.freedom.utils.GsonRequest;
+import com.kido.freedom.utils.VolleySingleton;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -42,7 +37,7 @@ import java.util.Map;
 
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationDrawerCallbacks {
+        implements NavigationDrawerCallbacks,Response.Listener<Device>, Response.ErrorListener {
 
     public static final String EXTRA_MESSAGE = "message";
     public static final String PROPERTY_REG_ID = "registration_id";
@@ -50,6 +45,7 @@ public class MainActivity extends AppCompatActivity
     private static final String PROPERTY_APP_VERSION = "appVersion";
     private static final String PROPERTY_PROFILE_ID = "profile_id";
     private final static String TAG = MainActivity.class.getSimpleName();
+    private static String API_ROUTE = "/RegisterPhone";
     public Device curDevice;
     protected String SENDER_ID = "389628942309";
     private GoogleCloudMessaging gcm = null;
@@ -78,7 +74,7 @@ public class MainActivity extends AppCompatActivity
         mToolbar = (Toolbar) findViewById(R.id.toolbar_actionbar);
         setSupportActionBar(mToolbar);
 
-       initDesign();
+        initDesign();
 
 
         mNavigationDrawerFragment = (NavigationDrawerFragment)
@@ -94,7 +90,7 @@ public class MainActivity extends AppCompatActivity
         initDevice();
     }
 
-    private void initDesign(){
+    private void initDesign() {
         pDialog = new ProgressDialog(this);
         pDialog.setMessage("Loading...");
         pDialog.setCancelable(false);
@@ -120,14 +116,36 @@ public class MainActivity extends AppCompatActivity
 
     private void makeRegisterPhone() {
         showProgressDialog();
-       // Adding request to request queue
-        AppController.getInstance().addToRequestQueue(jsonObjReq,
-                tag_json_obj);
 
-        // Cancelling request
-        // ApplicationController.getInstance().getRequestQueue().cancelAll(tag_json_obj);
+        Map<String, String> params = new HashMap<String, String>();
+        params.put("ModelAndVersionPhone", curDevice.getpModelAndVersionDevice());
+        params.put("PhoneId", curDevice.getpDeviceId());
+        params.put("PushNotificationToken", curDevice.getpPushNotificationToken());
+        params.put("TypePhone", curDevice.getpTypeDevice());
+
+        VolleySingleton.getInstance(fContext).addToRequestQueue(
+                new GsonRequest<>(API_ROUTE, Device.class, this, this, params),TAG);
     }
 
+    @Override
+    public void onResponse(Device phone) {
+        hideProgressDialog();
+        curDevice.setProfileId(phone.getProfileId());
+//        SharedPreferences sharedPref = getActivity().getSharedPreferences(
+//                PREFERENCE_CREDENTIALS, Context.MODE_PRIVATE);
+//        sharedPref.edit().putString(PREFERENCE_CREDENTIALS_TOKEN, user.getToken()).commit();
+//
+//        Intent intent = new Intent(getActivity(), HomeActivity.class);
+//        intent.putExtra("token", user.getToken());
+//        startActivity(intent);
+//        getActivity().finish();
+    }
+
+    @Override
+    public void onErrorResponse(VolleyError volleyError) {
+        hideProgressDialog();
+        Log.e(TAG, "err: " + volleyError.toString());
+    }
 
 
     public String getDeviceName() {
@@ -196,10 +214,16 @@ public class MainActivity extends AppCompatActivity
         if (checkPlayServices()) {
             gcm = GoogleCloudMessaging.getInstance(this);
             regid = getRegistrationId(fContext);
-
+            curDevice.setpPushNotificationToken(regid);
             if (regid.isEmpty()) {
                 registerInBackground();
             }
+            else{
+                if (getSavedProfileId(fContext).isEmpty()){
+                    makeRegisterPhone();
+                }
+            }
+
         } else {
             Log.d(TAG, "No valid Google Play Services APK found.");
         }
@@ -215,7 +239,6 @@ public class MainActivity extends AppCompatActivity
         }
         return profileId;
     }
-
 
 
     private void storeRegistrationId(Context context, String regId) {
@@ -264,6 +287,7 @@ public class MainActivity extends AppCompatActivity
                     Log.i(this.toString(), "regId = " + regid);
 
                     curDevice.setpPushNotificationToken(regid);
+                    makeRegisterPhone();
                     storeRegistrationId(fContext, regid);
 
                     msg = regid;
