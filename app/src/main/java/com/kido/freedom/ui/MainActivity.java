@@ -1,5 +1,6 @@
 package com.kido.freedom.ui;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
@@ -18,6 +19,12 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.VolleyLog;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.bluelinelabs.logansquare.LoganSquare;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
@@ -25,8 +32,13 @@ import com.kido.freedom.R;
 import com.kido.freedom.drawer.NavigationDrawerCallbacks;
 import com.kido.freedom.drawer.NavigationDrawerFragment;
 import com.kido.freedom.model.Device;
+import com.kido.freedom.utils.AppController;
+
+import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class MainActivity extends AppCompatActivity
@@ -36,7 +48,8 @@ public class MainActivity extends AppCompatActivity
     public static final String PROPERTY_REG_ID = "registration_id";
     private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
     private static final String PROPERTY_APP_VERSION = "appVersion";
-    private final static String TAG = "LaunchActivity";
+    private static final String PROPERTY_PROFILE_ID = "profile_id";
+    private final static String TAG = MainActivity.class.getSimpleName();
     public Device curDevice;
     protected String SENDER_ID = "389628942309";
     private GoogleCloudMessaging gcm = null;
@@ -44,6 +57,8 @@ public class MainActivity extends AppCompatActivity
     private Context fContext = null;
     private NavigationDrawerFragment mNavigationDrawerFragment;
     private Toolbar mToolbar;
+    private ProgressDialog pDialog;
+    private String tag_json_login = "jObj_login";
 
     private static int getAppVersion(Context context) {
         try {
@@ -63,8 +78,7 @@ public class MainActivity extends AppCompatActivity
         mToolbar = (Toolbar) findViewById(R.id.toolbar_actionbar);
         setSupportActionBar(mToolbar);
 
-
-//        initDesign();
+       initDesign();
 
 
         mNavigationDrawerFragment = (NavigationDrawerFragment)
@@ -80,12 +94,41 @@ public class MainActivity extends AppCompatActivity
         initDevice();
     }
 
+    private void initDesign(){
+        pDialog = new ProgressDialog(this);
+        pDialog.setMessage("Loading...");
+        pDialog.setCancelable(false);
+    }
+
     protected void initDevice() {
         curDevice = new Device();
         curDevice.setpModelAndVersionDevice(getDeviceName());
         curDevice.setpDeviceId(getDeviceId());
         initGCM();
     }
+
+    private void showProgressDialog() {
+        if (!pDialog.isShowing())
+            pDialog.show();
+    }
+
+    private void hideProgressDialog() {
+        if (pDialog.isShowing())
+            pDialog.hide();
+    }
+
+
+    private void makeRegisterPhone() {
+        showProgressDialog();
+       // Adding request to request queue
+        AppController.getInstance().addToRequestQueue(jsonObjReq,
+                tag_json_obj);
+
+        // Cancelling request
+        // ApplicationController.getInstance().getRequestQueue().cancelAll(tag_json_obj);
+    }
+
+
 
     public String getDeviceName() {
 
@@ -162,6 +205,18 @@ public class MainActivity extends AppCompatActivity
         }
 
     }
+
+    private String getSavedProfileId(Context context) {
+        final SharedPreferences prefs = getGCMPreferences(context);
+        String profileId = prefs.getString(PROPERTY_PROFILE_ID, "");
+        if (profileId.isEmpty()) {
+            Log.d(TAG, "Profile ID not found.");
+            return "";
+        }
+        return profileId;
+    }
+
+
 
     private void storeRegistrationId(Context context, String regId) {
         final SharedPreferences prefs = getGCMPreferences(context);

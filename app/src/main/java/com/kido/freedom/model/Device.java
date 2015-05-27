@@ -19,7 +19,7 @@ public class Device {
     public int pTypeDevice = 1;
 
     @JsonField (name = "Value")
-    public double idFromServer;
+    public double profileId;
 
 
     public String getpModelAndVersionDevice() {
@@ -38,12 +38,12 @@ public class Device {
         this.pTypeDevice = pTypeDevice;
     }
 
-    public double getIdFromServer() {
-        return idFromServer;
+    public double getProfileId() {
+        return profileId;
     }
 
-    public void setIdFromServer(double idFromServer) {
-        this.idFromServer = idFromServer;
+    public void setProfileId(double profileId) {
+        this.profileId = profileId;
     }
 
     public String getpPushNotificationToken() {
