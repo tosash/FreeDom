@@ -18,35 +18,18 @@ public class Device {
 
     @SerializedName("TypePhone")
     @Expose(serialize = true, deserialize = false)
-    private String pTypeDevice = "1";
+    private int pTypeDevice = 1;
 
     @SerializedName("Value")
-    @Expose(serialize = false, deserialize = true)
+    @Expose(serialize = true, deserialize = true)
     private String profileId;
 
-    @SerializedName("Message")
-    @Expose(serialize = false, deserialize = true)
-    private String responceMessage;
-
-    @SerializedName("StatusResponse")
-    @Expose(serialize = false, deserialize = true)
-    private String statusResponse;
-
-
-    public String getpModelAndVersionDevice() {
+        public String getpModelAndVersionDevice() {
         return pModelAndVersionDevice;
     }
 
     public void setpModelAndVersionDevice(String pModelAndVersionDevice) {
         this.pModelAndVersionDevice = pModelAndVersionDevice;
-    }
-
-    public String getStatusResponse() {
-        return statusResponse;
-    }
-
-    public void setStatusResponse(String statusResponse) {
-        this.statusResponse = statusResponse;
     }
 
     public String getpDeviceId() {
@@ -65,11 +48,11 @@ public class Device {
         this.pPushNotificationToken = pPushNotificationToken;
     }
 
-    public String getpTypeDevice() {
+    public int getpTypeDevice() {
         return pTypeDevice;
     }
 
-    public void setpTypeDevice(String pTypeDevice) {
+    public void setpTypeDevice(int pTypeDevice) {
         this.pTypeDevice = pTypeDevice;
     }
 
@@ -81,11 +64,4 @@ public class Device {
         this.profileId = profileId;
     }
 
-    public String getResponceMessage() {
-        return responceMessage;
-    }
-
-    public void setResponceMessage(String responceMessage) {
-        this.responceMessage = responceMessage;
-    }
 }

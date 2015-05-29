@@ -1,6 +1,5 @@
 package com.kido.freedom.ui;
 
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
@@ -17,10 +16,20 @@ import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.NetworkError;
+import com.android.volley.NetworkResponse;
+import com.android.volley.NoConnectionError;
+import com.android.volley.ParseError;
+import com.android.volley.Request;
 import com.android.volley.Response;
+import com.android.volley.ServerError;
+import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
+import com.github.rahatarmanahmed.cpv.CircularProgressView;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
@@ -28,16 +37,18 @@ import com.kido.freedom.R;
 import com.kido.freedom.drawer.NavigationDrawerCallbacks;
 import com.kido.freedom.drawer.NavigationDrawerFragment;
 import com.kido.freedom.model.Device;
+import com.kido.freedom.model.ServerAnswer;
 import com.kido.freedom.utils.GsonRequest;
 import com.kido.freedom.utils.VolleySingleton;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationDrawerCallbacks,Response.Listener<Device>, Response.ErrorListener {
+        implements NavigationDrawerCallbacks, Response.Listener<ServerAnswer>, Response.ErrorListener {
 
     public static final String EXTRA_MESSAGE = "message";
     public static final String PROPERTY_REG_ID = "registration_id";
@@ -47,14 +58,14 @@ public class MainActivity extends AppCompatActivity
     private final static String TAG = MainActivity.class.getSimpleName();
     private static String API_ROUTE = "/RegisterPhone";
     public Device curDevice;
+    public CircularProgressView pDialog;
     protected String SENDER_ID = "389628942309";
     private GoogleCloudMessaging gcm = null;
     private String regid = null;
+    private String profileId = null;
     private Context fContext = null;
     private NavigationDrawerFragment mNavigationDrawerFragment;
     private Toolbar mToolbar;
-    private ProgressDialog pDialog;
-    private String tag_json_login = "jObj_login";
 
     private static int getAppVersion(Context context) {
         try {
@@ -91,9 +102,8 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void initDesign() {
-        pDialog = new ProgressDialog(this);
-        pDialog.setMessage("Loading...");
-        pDialog.setCancelable(false);
+        pDialog = (CircularProgressView) findViewById(R.id.progress_view);
+        ;
     }
 
     protected void initDevice() {
@@ -104,49 +114,93 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void showProgressDialog() {
-        if (!pDialog.isShowing())
-            pDialog.show();
+        if (!pDialog.isShown()) {
+            pDialog.setVisibility(View.VISIBLE);
+            pDialog.startAnimation();
+        }
     }
 
     private void hideProgressDialog() {
-        if (pDialog.isShowing())
-            pDialog.hide();
+        if (pDialog.isShown()) {
+            pDialog.resetAnimation();
+            pDialog.setVisibility(View.INVISIBLE);
+        }
     }
 
 
     private void makeRegisterPhone() {
         showProgressDialog();
-
-        Map<String, String> params = new HashMap<String, String>();
-        params.put("ModelAndVersionPhone", curDevice.getpModelAndVersionDevice());
-        params.put("PhoneId", curDevice.getpDeviceId());
-        params.put("PushNotificationToken", curDevice.getpPushNotificationToken());
-        params.put("TypePhone", curDevice.getpTypeDevice());
-
+        JSONObject params = new JSONObject();
+        try {
+            params.put("ModelAndVersionPhone", curDevice.getpModelAndVersionDevice());
+            params.put("PhoneId", curDevice.getpDeviceId());
+            params.put("PushNotificationToken", curDevice.getpPushNotificationToken());
+            params.put("TypePhone", String.valueOf(curDevice.getpTypeDevice()));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
         VolleySingleton.getInstance(fContext).addToRequestQueue(
-                new GsonRequest<>(API_ROUTE, Device.class, this, this, params),TAG);
+                new GsonRequest<>(Request.Method.POST, API_ROUTE, ServerAnswer.class, null, this, this, params), TAG);
     }
 
     @Override
-    public void onResponse(Device phone) {
+    public void onResponse(ServerAnswer answer) {
         hideProgressDialog();
-        curDevice.setProfileId(phone.getProfileId());
-//        SharedPreferences sharedPref = getActivity().getSharedPreferences(
-//                PREFERENCE_CREDENTIALS, Context.MODE_PRIVATE);
-//        sharedPref.edit().putString(PREFERENCE_CREDENTIALS_TOKEN, user.getToken()).commit();
-//
-//        Intent intent = new Intent(getActivity(), HomeActivity.class);
-//        intent.putExtra("token", user.getToken());
-//        startActivity(intent);
-//        getActivity().finish();
+        curDevice.setProfileId(answer.getValue());
+        setPropertyProfileId(fContext, answer.getValue());
     }
+
 
     @Override
-    public void onErrorResponse(VolleyError volleyError) {
+    public void onErrorResponse(VolleyError error) {
         hideProgressDialog();
-        Log.e(TAG, "err: " + volleyError.toString());
+        Log.e(TAG, "err: " + error.toString());
+        if (error instanceof TimeoutError || error instanceof NoConnectionError) {
+            Toast.makeText(fContext, "TimeOut Error", Toast.LENGTH_LONG).show();
+        } else if (error instanceof AuthFailureError) {
+            Toast.makeText(fContext, "AuthFailureError", Toast.LENGTH_LONG).show();
+        } else if (error instanceof ServerError) {
+            Toast.makeText(fContext, "ServerError", Toast.LENGTH_LONG).show();
+        } else if (error instanceof NetworkError) {
+            Toast.makeText(fContext, "NetworkError", Toast.LENGTH_LONG).show();
+        } else if (error instanceof ParseError) {
+            Toast.makeText(fContext, "ParseError", Toast.LENGTH_LONG).show();
+        }
+
+
+        String json = null;
+
+        NetworkResponse response = error.networkResponse;
+        if (response != null && response.data != null) {
+            switch (response.statusCode) {
+                case 400:
+                    json = new String(response.data);
+                    json = trimMessage(json, "message");
+                    if (json != null) displayMessage(json);
+                    break;
+            }
+            //Additional cases
+        }
     }
 
+    public String trimMessage(String json, String key) {
+        String trimmedString = null;
+
+        try {
+            JSONObject obj = new JSONObject(json);
+            trimmedString = obj.getString(key);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return null;
+        }
+
+        return trimmedString;
+    }
+
+    //Somewhere that has access to a context
+    public void displayMessage(String toastString) {
+        Toast.makeText(fContext, toastString, Toast.LENGTH_LONG).show();
+    }
 
     public String getDeviceName() {
 
@@ -214,12 +268,13 @@ public class MainActivity extends AppCompatActivity
         if (checkPlayServices()) {
             gcm = GoogleCloudMessaging.getInstance(this);
             regid = getRegistrationId(fContext);
+            profileId = getSavedProfileId(fContext);
             curDevice.setpPushNotificationToken(regid);
+            curDevice.setProfileId(profileId);
             if (regid.isEmpty()) {
                 registerInBackground();
-            }
-            else{
-                if (getSavedProfileId(fContext).isEmpty()){
+            } else {
+                if (profileId.isEmpty()) {
                     makeRegisterPhone();
                 }
             }
@@ -240,6 +295,14 @@ public class MainActivity extends AppCompatActivity
         return profileId;
     }
 
+    private void setPropertyProfileId(Context context, String profileId) {
+        final SharedPreferences prefs = getGCMPreferences(context);
+        Log.i(TAG, "Saving ProfileId " + profileId);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString(PROPERTY_PROFILE_ID, profileId);
+        editor.commit();
+    }
+
 
     private void storeRegistrationId(Context context, String regId) {
         final SharedPreferences prefs = getGCMPreferences(context);
@@ -253,6 +316,9 @@ public class MainActivity extends AppCompatActivity
 
     private String getRegistrationId(Context context) {
         final SharedPreferences prefs = getGCMPreferences(context);
+
+//        prefs.edit().clear().commit();
+
         String registrationId = prefs.getString(PROPERTY_REG_ID, "");
         if (registrationId.isEmpty()) {
             Log.d(TAG, "Registration ID not found.");
@@ -274,6 +340,7 @@ public class MainActivity extends AppCompatActivity
 
 
     private void registerInBackground() {
+        showProgressDialog();
         new AsyncTask<String, Void, String>() {
 
             @Override
@@ -285,13 +352,14 @@ public class MainActivity extends AppCompatActivity
                     }
                     regid = gcm.register(SENDER_ID);
                     Log.i(this.toString(), "regId = " + regid);
-
+//                    hideProgressDialog();
                     curDevice.setpPushNotificationToken(regid);
                     makeRegisterPhone();
                     storeRegistrationId(fContext, regid);
-
                     msg = regid;
+
                 } catch (IOException ex) {
+//                    hideProgressDialog();
                     msg = "Error :" + ex.getMessage();
                 }
                 return msg;
@@ -299,7 +367,12 @@ public class MainActivity extends AppCompatActivity
 
             @Override
             protected void onPostExecute(String msg) {
-                // setting registration id in edit text.
+                hideProgressDialog();
+            }
+
+            @Override
+            protected void onCancelled() {
+                hideProgressDialog();
             }
 
         }.execute(null, null, null);

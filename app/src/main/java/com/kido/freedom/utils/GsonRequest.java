@@ -1,5 +1,8 @@
 package com.kido.freedom.utils;
 
+import android.util.Log;
+
+import com.android.volley.AuthFailureError;
 import com.android.volley.NetworkResponse;
 import com.android.volley.ParseError;
 import com.android.volley.Request;
@@ -10,6 +13,8 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 import com.kido.freedom.BuildConfig;
+
+import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Map;
@@ -27,69 +32,41 @@ public class GsonRequest<T> extends Request<T> {
                     .create();
     private final Class<T> clazz;
     private final Response.Listener<T> listener;
-    private final Map<String, String> params;
+    private final Map<String, String> headers;
+    private JSONObject params = null;
 
-    /**
-     * Make a GET request and return a POJO from parsed JSON
-     * to the {@link Response.Listener} callback
-     *
-     * @param url           URL of the request to make
-     * @param listener      Response listener
-     * @param errorListener Error Response listener
-     * @param clazz         Relevant class object, for Gson's reflection
-     */
-    public GsonRequest(String url, Class<T> clazz, Response.Listener<T> listener,
-                       Response.ErrorListener errorListener) {
-        this(Method.GET, BASE_URL + url, clazz, listener, errorListener, null);
-    }
-
-    public GsonRequest(int method, String url, Class<T> clazz, Response.Listener<T> listener,
-                       Response.ErrorListener errorListener, Map<String, String> params) {
-        super(method, url, errorListener);
+    public GsonRequest(int method, String url, Class<T> clazz, Map<String, String> headers,
+                       Response.Listener<T> listener, Response.ErrorListener errorListener) {
+        super(method, BASE_URL + url, errorListener);
         this.clazz = clazz;
+        this.headers = headers;
         this.listener = listener;
-        this.params = params;
     }
 
-    /**
-     * Make a GET/POST request and return a POJO from parsed JSON
-     * to the {@link Response.Listener} callback
-     *
-     * @param url           URL of the request to make
-     * @param listener      Response listener
-     * @param errorListener Error Response listener
-     * @param clazz         Relevant class object, for Gson's reflection
-     */
-    public GsonRequest(String url, Class<T> clazz, Response.Listener<T> listener,
-                       Response.ErrorListener errorListener, Map<String, String> params) {
-        this(params == null ? Method.GET : Method.POST, BASE_URL + url, clazz, listener,
-                errorListener, params);
-    }
-
-    public GsonRequest(String url, Class<T> clazz, Response.Listener<T> listener,
-                       Response.ErrorListener errorListener, Map<String, String> params,
-                       boolean base) {
-        this(params == null ? Method.GET : Method.POST, base ? BASE_URL + url : url, clazz,
-                listener, errorListener, params);
+    public GsonRequest(int method, String url, Class<T> clazz, Map<String, String> headers,
+                       Response.Listener<T> listener, Response.ErrorListener errorListener, JSONObject parameters) {
+        this(method, url, clazz, headers, listener, errorListener);
+        this.params = parameters;
     }
 
     @Override
-    public Map<String, String> getParams() {
-        return this.params;
+    public Map<String, String> getHeaders() throws AuthFailureError {
+        return headers != null ? headers : super.getHeaders();
     }
 
     @Override
-    protected Response<T> parseNetworkResponse(NetworkResponse response) {
+    public String getBodyContentType() {
+        return "application/json";
+    }
+
+    @Override
+    public byte[] getBody() throws AuthFailureError {
         try {
-            String json = new String(response.data,
-                    HttpHeaderParser.parseCharset(response.headers));
-            return Response.success(gson.fromJson(json, clazz),
-                    HttpHeaderParser.parseCacheHeaders(response));
+            return params.toString().getBytes(getParamsEncoding());
         } catch (UnsupportedEncodingException e) {
-            return Response.error(new ParseError(e));
-        } catch (JsonSyntaxException e) {
-            return Response.error(new ParseError(e));
+            Log.d(TAG, e.getMessage());
         }
+        return null;
     }
 
     @Override
@@ -97,4 +74,18 @@ public class GsonRequest<T> extends Request<T> {
         listener.onResponse(response);
     }
 
+    @Override
+    protected Response<T> parseNetworkResponse(NetworkResponse response) {
+        try {
+            String json = new String(
+                    response.data, HttpHeaderParser.parseCharset(response.headers));
+            Log.i("RESPONSE", json);
+            return Response.success(
+                    gson.fromJson(json, clazz), HttpHeaderParser.parseCacheHeaders(response));
+        } catch (UnsupportedEncodingException e) {
+            return Response.error(new ParseError(e));
+        } catch (JsonSyntaxException e) {
+            return Response.error(new ParseError(e));
+        }
+    }
 }
