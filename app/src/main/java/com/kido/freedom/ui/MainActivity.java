@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -17,6 +16,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
@@ -29,6 +29,7 @@ import com.android.volley.Response;
 import com.android.volley.ServerError;
 import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
+import com.android.volley.toolbox.NetworkImageView;
 import com.github.rahatarmanahmed.cpv.CircularProgressView;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -37,7 +38,9 @@ import com.kido.freedom.R;
 import com.kido.freedom.drawer.NavigationDrawerCallbacks;
 import com.kido.freedom.drawer.NavigationDrawerFragment;
 import com.kido.freedom.model.Device;
-import com.kido.freedom.model.ServerAnswer;
+import com.kido.freedom.model.ServerProfileResponse;
+import com.kido.freedom.model.ServerRegitration;
+import com.kido.freedom.model.UserProfile;
 import com.kido.freedom.utils.GsonRequest;
 import com.kido.freedom.utils.VolleySingleton;
 
@@ -48,7 +51,7 @@ import java.io.IOException;
 
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationDrawerCallbacks, Response.Listener<ServerAnswer>, Response.ErrorListener {
+        implements NavigationDrawerCallbacks, Response.Listener<ServerRegitration>, Response.ErrorListener {
 
     public static final String EXTRA_MESSAGE = "message";
     public static final String PROPERTY_REG_ID = "registration_id";
@@ -57,7 +60,9 @@ public class MainActivity extends AppCompatActivity
     private static final String PROPERTY_PROFILE_ID = "profile_id";
     private final static String TAG = MainActivity.class.getSimpleName();
     private static String API_ROUTE = "/RegisterPhone";
+    private static String API_GETPROFILE_INFO = "/ProfileInfo?profileId=";
     public Device curDevice;
+    public UserProfile curUser;
     public CircularProgressView pDialog;
     protected String SENDER_ID = "389628942309";
     private GoogleCloudMessaging gcm = null;
@@ -66,6 +71,8 @@ public class MainActivity extends AppCompatActivity
     private Context fContext = null;
     private NavigationDrawerFragment mNavigationDrawerFragment;
     private Toolbar mToolbar;
+    private TextView mCoins;
+    private NetworkImageView avatar;
 
     private static int getAppVersion(Context context) {
         try {
@@ -92,25 +99,26 @@ public class MainActivity extends AppCompatActivity
                 getFragmentManager().findFragmentById(R.id.fragment_drawer);
 
         // Set up the drawer.
+
         mNavigationDrawerFragment.setup(R.id.fragment_drawer, (DrawerLayout) findViewById(R.id.drawer), mToolbar);
         // populate the navigation drawer
-
-
-        mNavigationDrawerFragment.setUserData("John Doe", "johndoe@doe.com", BitmapFactory.decodeResource(getResources(), R.drawable.avatar));
 
         initDevice();
     }
 
     private void initDesign() {
         pDialog = (CircularProgressView) findViewById(R.id.progress_view);
-        ;
+        mCoins = (TextView) findViewById(R.id.textView2);
+        NetworkImageView avatar = (NetworkImageView) findViewById(R.id.imgAvatar);
     }
 
     protected void initDevice() {
         curDevice = new Device();
+        curUser = new UserProfile();
         curDevice.setpModelAndVersionDevice(getDeviceName());
         curDevice.setpDeviceId(getDeviceId());
         initGCM();
+        getProfileValues();
     }
 
     private void showProgressDialog() {
@@ -127,6 +135,37 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    public void getmCoins() {
+
+    }
+
+    public void setmCoins(String cValue) {
+        this.mCoins.setText(cValue);
+    }
+
+    private void getProfileValues() {
+        showProgressDialog();
+        VolleySingleton.getInstance(fContext).addToRequestQueue(
+                new GsonRequest<ServerProfileResponse>(Request.Method.GET,
+                        API_GETPROFILE_INFO + curDevice.getProfileId(),
+                        ServerProfileResponse.class,
+                        null,
+                        new Response.Listener<ServerProfileResponse>() {
+                            @Override
+                            public void onResponse(ServerProfileResponse response) {
+                                hideProgressDialog();
+                                curUser = response.getValue();
+                                mNavigationDrawerFragment.setUserData(curUser, null);//BitmapFactory.decodeResource(getResources(), R.drawable.avatar));
+                                NetworkImageView avatar = (NetworkImageView) findViewById(R.id.imgAvatar);
+                                avatar.setImageUrl(
+                                        curUser.getUserImage(),
+                                        VolleySingleton.getInstance(fContext).getImageLoader());
+
+                            }
+                        },
+                        this,
+                        null), TAG);
+    }
 
     private void makeRegisterPhone() {
         showProgressDialog();
@@ -140,11 +179,11 @@ public class MainActivity extends AppCompatActivity
             e.printStackTrace();
         }
         VolleySingleton.getInstance(fContext).addToRequestQueue(
-                new GsonRequest<>(Request.Method.POST, API_ROUTE, ServerAnswer.class, null, this, this, params), TAG);
+                new GsonRequest<>(Request.Method.POST, API_ROUTE, ServerRegitration.class, null, this, this, params), TAG);
     }
 
     @Override
-    public void onResponse(ServerAnswer answer) {
+    public void onResponse(ServerRegitration answer) {
         hideProgressDialog();
         curDevice.setProfileId(answer.getValue());
         setPropertyProfileId(fContext, answer.getValue());
@@ -282,7 +321,6 @@ public class MainActivity extends AppCompatActivity
         } else {
             Log.d(TAG, "No valid Google Play Services APK found.");
         }
-
     }
 
     private String getSavedProfileId(Context context) {

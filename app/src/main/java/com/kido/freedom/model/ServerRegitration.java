@@ -4,7 +4,7 @@ import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 
-public class ServerAnswer {
+public class ServerRegitration {
 
     @SerializedName("Message")
     @Expose(serialize = false, deserialize = true)

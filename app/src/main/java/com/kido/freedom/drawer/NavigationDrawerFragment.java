@@ -16,8 +16,8 @@ import android.graphics.Shader;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -28,6 +28,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.kido.freedom.R;
+import com.kido.freedom.model.UserProfile;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -227,11 +228,16 @@ public class NavigationDrawerFragment extends Fragment implements NavigationDraw
         mActionBarDrawerToggle.onConfigurationChanged(newConfig);
     }
 
-    public void setUserData(String user, String email, Bitmap avatar) {
+    public void setUserData(UserProfile cUser, Bitmap avatar) {
         ImageView avatarContainer = (ImageView) mFragmentContainerView.findViewById(R.id.imgAvatar);
-        ((TextView) mFragmentContainerView.findViewById(R.id.txtUserEmail)).setText(email);
-        ((TextView) mFragmentContainerView.findViewById(R.id.txtUsername)).setText(user);
-        avatarContainer.setImageDrawable(new RoundImage(avatar));
+        ((TextView) mFragmentContainerView.findViewById(R.id.txtUserColor)).setText(cUser.getUserLevel());
+        ((TextView) mFragmentContainerView.findViewById(R.id.txtUsername)).setText(cUser.getUserName());
+        ((TextView) mFragmentContainerView.findViewById(R.id.txtStatus)).setText(cUser.getUserStatus());
+        if (avatar == null) {
+//            avatarContainer.setImageDrawable(new RoundImage(BitmapFactory.decodeResource(getResources(), R.drawable.ic_no_user)));
+        } else {
+            avatarContainer.setImageDrawable(new RoundImage(avatar));
+        }
     }
 
     public View getGoogleDrawer() {
