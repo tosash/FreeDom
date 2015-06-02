@@ -1,5 +1,7 @@
 package com.kido.freedom.ui;
 
+import android.app.Fragment;
+import android.app.FragmentManager;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
@@ -29,7 +31,6 @@ import com.android.volley.Response;
 import com.android.volley.ServerError;
 import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.NetworkImageView;
 import com.github.rahatarmanahmed.cpv.CircularProgressView;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -37,10 +38,13 @@ import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.kido.freedom.R;
 import com.kido.freedom.drawer.NavigationDrawerCallbacks;
 import com.kido.freedom.drawer.NavigationDrawerFragment;
+import com.kido.freedom.model.Balance;
 import com.kido.freedom.model.Device;
+import com.kido.freedom.model.ServerBalance;
 import com.kido.freedom.model.ServerProfileResponse;
 import com.kido.freedom.model.ServerRegitration;
 import com.kido.freedom.model.UserProfile;
+import com.kido.freedom.utils.CircularNetworkImageView;
 import com.kido.freedom.utils.GsonRequest;
 import com.kido.freedom.utils.VolleySingleton;
 
@@ -61,18 +65,23 @@ public class MainActivity extends AppCompatActivity
     private final static String TAG = MainActivity.class.getSimpleName();
     private static String API_ROUTE = "/RegisterPhone";
     private static String API_GETPROFILE_INFO = "/ProfileInfo?profileId=";
+    private static String API_GET_BALANCE = "/GetBalanceByProfileId";
     public Device curDevice;
     public UserProfile curUser;
+    public Balance curBalance;
     public CircularProgressView pDialog;
-    protected String SENDER_ID = "389628942309";
+    public Context fContext = null;
+    public Toolbar mToolbar;
+    public TextView mCoins;
+    public TextView mPoints;
+    public CircularNetworkImageView avatar;
+    protected String SENDER_ID_GCM = "389628942309";
     private GoogleCloudMessaging gcm = null;
     private String regid = null;
     private String profileId = null;
-    private Context fContext = null;
     private NavigationDrawerFragment mNavigationDrawerFragment;
-    private Toolbar mToolbar;
-    private TextView mCoins;
-    private NetworkImageView avatar;
+    private Toast toast;
+    private long lastBackPressTime = 0;
 
     private static int getAppVersion(Context context) {
         try {
@@ -108,16 +117,37 @@ public class MainActivity extends AppCompatActivity
 
     private void initDesign() {
         pDialog = (CircularProgressView) findViewById(R.id.progress_view);
-        mCoins = (TextView) findViewById(R.id.textView2);
-        NetworkImageView avatar = (NetworkImageView) findViewById(R.id.imgAvatar);
+        mCoins = (TextView) findViewById(R.id.textMoney);
+        mPoints = (TextView) findViewById(R.id.textPoints);
+        avatar = (CircularNetworkImageView) findViewById(R.id.imgAvatar);
+        avatar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try {
+                    FragmentManager fragmentManager = getFragmentManager(); // For AppCompat use getSupportFragmentManager
+                    fragmentManager.beginTransaction()
+                            .replace(R.id.container, new FragmentAccount())
+                            .addToBackStack(null)
+                            .commit();
+                    mNavigationDrawerFragment.closeDrawer();
+                    Log.i(TAG, "Avatar is pressed, visible in LogCat");
+                    ;
+                } catch (Exception e) {
+                    Log.e(TAG, e.toString());
+                }
+            }
+        });
+
     }
 
     protected void initDevice() {
         curDevice = new Device();
         curUser = new UserProfile();
+        curBalance = new Balance();
         curDevice.setpModelAndVersionDevice(getDeviceName());
         curDevice.setpDeviceId(getDeviceId());
         initGCM();
+        getUserBalance();
         getProfileValues();
     }
 
@@ -135,15 +165,8 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    public void getmCoins() {
 
-    }
-
-    public void setmCoins(String cValue) {
-        this.mCoins.setText(cValue);
-    }
-
-    private void getProfileValues() {
+    public void getProfileValues() {
         showProgressDialog();
         VolleySingleton.getInstance(fContext).addToRequestQueue(
                 new GsonRequest<ServerProfileResponse>(Request.Method.GET,
@@ -156,15 +179,38 @@ public class MainActivity extends AppCompatActivity
                                 hideProgressDialog();
                                 curUser = response.getValue();
                                 mNavigationDrawerFragment.setUserData(curUser, null);//BitmapFactory.decodeResource(getResources(), R.drawable.avatar));
-                                NetworkImageView avatar = (NetworkImageView) findViewById(R.id.imgAvatar);
-                                avatar.setImageUrl(
-                                        curUser.getUserImage(),
-                                        VolleySingleton.getInstance(fContext).getImageLoader());
-
+                                CircularNetworkImageView avatar = (CircularNetworkImageView) findViewById(R.id.imgAvatar);
+                                avatar.setImageUrl(curUser.getUserImage(), VolleySingleton.getInstance(fContext).getImageLoader());
                             }
                         },
                         this,
                         null), TAG);
+    }
+
+    public void getUserBalance() {
+        showProgressDialog();
+        JSONObject params = new JSONObject();
+        try {
+            params.put("ProfileId", curDevice.getProfileId());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        VolleySingleton.getInstance(fContext).addToRequestQueue(
+                new GsonRequest<ServerBalance>(Request.Method.POST,
+                        API_GET_BALANCE,
+                        ServerBalance.class,
+                        null,
+                        new Response.Listener<ServerBalance>() {
+                            @Override
+                            public void onResponse(ServerBalance response) {
+                                hideProgressDialog();
+                                curBalance = response.getValue();
+                                mCoins.setText(Double.toString(curBalance.getMoney()));
+                                mPoints.setText(Integer.toString(curBalance.getPoints()));
+                            }
+                        },
+                        this,
+                        params), TAG);
     }
 
     private void makeRegisterPhone() {
@@ -187,6 +233,7 @@ public class MainActivity extends AppCompatActivity
         hideProgressDialog();
         curDevice.setProfileId(answer.getValue());
         setPropertyProfileId(fContext, answer.getValue());
+        initDevice();
     }
 
 
@@ -388,7 +435,7 @@ public class MainActivity extends AppCompatActivity
                     if (gcm == null) {
                         gcm = GoogleCloudMessaging.getInstance(MainActivity.this);
                     }
-                    regid = gcm.register(SENDER_ID);
+                    regid = gcm.register(SENDER_ID_GCM);
                     Log.i(this.toString(), "regId = " + regid);
 //                    hideProgressDialog();
                     curDevice.setpPushNotificationToken(regid);
@@ -419,8 +466,20 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onNavigationDrawerItemSelected(int position) {
-        // update the main content by replacing fragments
-        Toast.makeText(this, "Menu item selected -> " + position, Toast.LENGTH_SHORT).show();
+        Fragment fragment;
+        FragmentManager fragmentManager = getFragmentManager(); // For AppCompat use getSupportFragmentManager
+        switch (position) {
+            default:
+            case 0:
+                fragment = new FragmentAccount();
+                break;
+            case 1:
+                fragment = new FragmentAccount();
+                break;
+        }
+//        fragmentManager.beginTransaction()
+//                .replace(R.id.container, fragment)
+//                .commit();
     }
 
 
@@ -428,8 +487,23 @@ public class MainActivity extends AppCompatActivity
     public void onBackPressed() {
         if (mNavigationDrawerFragment.isDrawerOpen())
             mNavigationDrawerFragment.closeDrawer();
-        else
-            super.onBackPressed();
+        else {
+//            super.onBackPressed();
+            if (getFragmentManager().getBackStackEntryCount() == 0) {
+                if (this.lastBackPressTime < System.currentTimeMillis() - 4000) {
+                    toast = Toast.makeText(this, "Press back again to close this app", 4000);
+                    toast.show();
+                    this.lastBackPressTime = System.currentTimeMillis();
+                } else {
+                    if (toast != null) {
+                        toast.cancel();
+                    }
+                    super.onBackPressed();
+                }
+            } else {
+                getFragmentManager().popBackStack();
+            }
+        }
     }
 
 
@@ -454,9 +528,9 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_search) {
-            return true;
-        }
+//        if (id == R.id.action_search) {
+//            return true;
+//        }
 
         return super.onOptionsItemSelected(item);
     }

@@ -25,6 +25,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.kido.freedom.R;
@@ -105,6 +106,8 @@ public class NavigationDrawerFragment extends Fragment implements NavigationDraw
     public boolean isDrawerOpen() {
         return mDrawerLayout != null && mDrawerLayout.isDrawerOpen(mFragmentContainerView);
     }
+
+
 
     public ActionBarDrawerToggle getActionBarDrawerToggle() {
         return mActionBarDrawerToggle;
@@ -229,15 +232,18 @@ public class NavigationDrawerFragment extends Fragment implements NavigationDraw
     }
 
     public void setUserData(UserProfile cUser, Bitmap avatar) {
-        ImageView avatarContainer = (ImageView) mFragmentContainerView.findViewById(R.id.imgAvatar);
+         ImageView avatarContainer = (ImageView) mFragmentContainerView.findViewById(R.id.imgAvatar);
         ((TextView) mFragmentContainerView.findViewById(R.id.txtUserColor)).setText(cUser.getUserLevel());
         ((TextView) mFragmentContainerView.findViewById(R.id.txtUsername)).setText(cUser.getUserName());
         ((TextView) mFragmentContainerView.findViewById(R.id.txtStatus)).setText(cUser.getUserStatus());
+        ((ProgressBar) mFragmentContainerView.findViewById(R.id.PROGRESS_BAR)).setMax(Integer.parseInt(cUser.getUserPointsNextLevel()));
+        ((ProgressBar) mFragmentContainerView.findViewById(R.id.PROGRESS_BAR)).setSecondaryProgress(Integer.parseInt(cUser.getUserPoints()));
         if (avatar == null) {
 //            avatarContainer.setImageDrawable(new RoundImage(BitmapFactory.decodeResource(getResources(), R.drawable.ic_no_user)));
         } else {
             avatarContainer.setImageDrawable(new RoundImage(avatar));
         }
+
     }
 
     public View getGoogleDrawer() {

@@ -11,7 +11,7 @@
         android:background="#ff4574d2"
         android:paddingTop="24dp">
 
-        <com.android.volley.toolbox.NetworkImageView
+        <com.kido.freedom.utils.CircularNetworkImageView
             android:id="@+id/imgAvatar"
             android:layout_width="120dp"
             android:layout_height="120dp"

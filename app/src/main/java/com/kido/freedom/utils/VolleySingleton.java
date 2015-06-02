@@ -54,7 +54,7 @@ public class VolleySingleton {
 //		req.setRetryPolicy(new DefaultRetryPolicy(30000,
 //				DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
 //				DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-//		req.setShouldCache(true);
+		req.setShouldCache(true);
 		getRequestQueue().add(req);
 
 	}
@@ -64,7 +64,7 @@ public class VolleySingleton {
 //		req.setRetryPolicy(new DefaultRetryPolicy(30000,
 //				DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
 //				DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-//		req.setShouldCache(true);
+		req.setShouldCache(true);
 		getRequestQueue().add(req);
 	}
 

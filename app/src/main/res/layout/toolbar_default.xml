@@ -22,10 +22,9 @@
                 android:background="@color/myPrimaryColor" />
 
             <TextView
-                android:id="@+id/textView1"
+                android:id="@+id/textMoney"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="34678"
                 android:textAppearance="?android:attr/textAppearanceSmall"
                 android:paddingTop="8dp"
                 android:paddingRight="3dp"
@@ -42,10 +41,9 @@
                 android:background="@color/myPrimaryColor" />
 
             <TextView
-                android:id="@+id/textView2"
+                android:id="@+id/textPoints"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="300"
                 android:textAppearance="?android:attr/textAppearanceSmall"
                 android:paddingTop="8dp"
                 android:paddingRight="3dp"
