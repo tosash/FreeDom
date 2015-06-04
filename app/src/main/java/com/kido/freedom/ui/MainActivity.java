@@ -40,9 +40,11 @@ import com.kido.freedom.drawer.NavigationDrawerCallbacks;
 import com.kido.freedom.drawer.NavigationDrawerFragment;
 import com.kido.freedom.model.Balance;
 import com.kido.freedom.model.Device;
+import com.kido.freedom.model.ServerAccountResponse;
 import com.kido.freedom.model.ServerBalance;
 import com.kido.freedom.model.ServerProfileResponse;
 import com.kido.freedom.model.ServerRegitration;
+import com.kido.freedom.model.UserAccount;
 import com.kido.freedom.model.UserProfile;
 import com.kido.freedom.utils.CircularNetworkImageView;
 import com.kido.freedom.utils.GsonRequest;
@@ -66,9 +68,11 @@ public class MainActivity extends AppCompatActivity
     private static String API_ROUTE = "/RegisterPhone";
     private static String API_GETPROFILE_INFO = "/ProfileInfo?profileId=";
     private static String API_GET_BALANCE = "/GetBalanceByProfileId";
+    private static String API_GET_ACCOUNT = "/GetPrivateInfo?profileId=";
     public Device curDevice;
     public UserProfile curUser;
     public Balance curBalance;
+    public UserAccount curUAccount;
     public CircularProgressView pDialog;
     public Context fContext = null;
     public Toolbar mToolbar;
@@ -126,7 +130,8 @@ public class MainActivity extends AppCompatActivity
                 try {
                     FragmentManager fragmentManager = getFragmentManager(); // For AppCompat use getSupportFragmentManager
                     fragmentManager.beginTransaction()
-                            .replace(R.id.container, new FragmentAccount())
+                            .add(R.id.container, new FragmentAccount())
+//                            .replace(R.id.container, new FragmentAccount())
                             .addToBackStack(null)
                             .commit();
                     mNavigationDrawerFragment.closeDrawer();
@@ -144,21 +149,23 @@ public class MainActivity extends AppCompatActivity
         curDevice = new Device();
         curUser = new UserProfile();
         curBalance = new Balance();
+        curUAccount = new UserAccount();
         curDevice.setpModelAndVersionDevice(getDeviceName());
         curDevice.setpDeviceId(getDeviceId());
         initGCM();
         getUserBalance();
         getProfileValues();
+        getAccount();
     }
 
-    private void showProgressDialog() {
+    public void showProgressDialog() {
         if (!pDialog.isShown()) {
             pDialog.setVisibility(View.VISIBLE);
             pDialog.startAnimation();
         }
     }
 
-    private void hideProgressDialog() {
+    public void hideProgressDialog() {
         if (pDialog.isShown()) {
             pDialog.resetAnimation();
             pDialog.setVisibility(View.INVISIBLE);
@@ -181,6 +188,24 @@ public class MainActivity extends AppCompatActivity
                                 mNavigationDrawerFragment.setUserData(curUser, null);//BitmapFactory.decodeResource(getResources(), R.drawable.avatar));
                                 CircularNetworkImageView avatar = (CircularNetworkImageView) findViewById(R.id.imgAvatar);
                                 avatar.setImageUrl(curUser.getUserImage(), VolleySingleton.getInstance(fContext).getImageLoader());
+                            }
+                        },
+                        this,
+                        null), TAG);
+    }
+
+    public void getAccount() {
+        showProgressDialog();
+        VolleySingleton.getInstance(fContext).addToRequestQueue(
+                new GsonRequest<ServerAccountResponse>(Request.Method.GET,
+                        API_GET_ACCOUNT + curDevice.getProfileId(),
+                        ServerAccountResponse.class,
+                        null,
+                        new Response.Listener<ServerAccountResponse>() {
+                            @Override
+                            public void onResponse(ServerAccountResponse response) {
+                                hideProgressDialog();
+                                curUAccount = response.getValue();
                             }
                         },
                         this,
