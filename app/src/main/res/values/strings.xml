@@ -14,4 +14,9 @@
     <string name="txtProfile">Ваш профиль</string>
     <string name="ttlGender">Укажите свой пол</string>
     <string name="ttlCity">Укажите город</string>
+    <string name="cancel">Отмена</string>
+    <string name="cameraPhoto">Сделать снимок</string>
+    <string name="galleryPhoto">Мои фото</string>
+    <string name="titleGetPhoto">Укажите фото</string>
+
 </resources>

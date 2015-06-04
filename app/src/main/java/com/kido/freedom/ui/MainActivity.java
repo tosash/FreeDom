@@ -43,7 +43,7 @@ import com.kido.freedom.model.Device;
 import com.kido.freedom.model.ServerAccountResponse;
 import com.kido.freedom.model.ServerBalance;
 import com.kido.freedom.model.ServerProfileResponse;
-import com.kido.freedom.model.ServerRegitration;
+import com.kido.freedom.model.ServerRegistration;
 import com.kido.freedom.model.UserAccount;
 import com.kido.freedom.model.UserProfile;
 import com.kido.freedom.utils.CircularNetworkImageView;
@@ -57,7 +57,7 @@ import java.io.IOException;
 
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationDrawerCallbacks, Response.Listener<ServerRegitration>, Response.ErrorListener {
+        implements NavigationDrawerCallbacks, Response.Listener<ServerRegistration>, Response.ErrorListener {
 
     public static final String EXTRA_MESSAGE = "message";
     public static final String PROPERTY_REG_ID = "registration_id";
@@ -250,11 +250,11 @@ public class MainActivity extends AppCompatActivity
             e.printStackTrace();
         }
         VolleySingleton.getInstance(fContext).addToRequestQueue(
-                new GsonRequest<>(Request.Method.POST, API_ROUTE, ServerRegitration.class, null, this, this, params), TAG);
+                new GsonRequest<>(Request.Method.POST, API_ROUTE, ServerRegistration.class, null, this, this, params), TAG);
     }
 
     @Override
-    public void onResponse(ServerRegitration answer) {
+    public void onResponse(ServerRegistration answer) {
         hideProgressDialog();
         curDevice.setProfileId(answer.getValue());
         setPropertyProfileId(fContext, answer.getValue());

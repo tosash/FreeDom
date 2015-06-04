@@ -49,6 +49,7 @@ public class UserAccount {
     @Expose(serialize = true, deserialize = true)
     private String image;
 
+
     public Date getBirthday() {
         return birthday;
     }
