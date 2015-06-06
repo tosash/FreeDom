@@ -48,6 +48,7 @@ import com.kido.freedom.model.UserAccount;
 import com.kido.freedom.model.UserProfile;
 import com.kido.freedom.utils.CircularNetworkImageView;
 import com.kido.freedom.utils.GsonRequest;
+import com.kido.freedom.utils.Utils;
 import com.kido.freedom.utils.VolleySingleton;
 
 import org.json.JSONException;
@@ -130,7 +131,7 @@ public class MainActivity extends AppCompatActivity
                 try {
                     FragmentManager fragmentManager = getFragmentManager(); // For AppCompat use getSupportFragmentManager
                     fragmentManager.beginTransaction()
-                            .add(R.id.container, new FragmentAccount())
+                            .add(R.id.container, new FragmentStrip())
 //                            .replace(R.id.container, new FragmentAccount())
                             .addToBackStack(null)
                             .commit();
@@ -206,6 +207,7 @@ public class MainActivity extends AppCompatActivity
                             public void onResponse(ServerAccountResponse response) {
                                 hideProgressDialog();
                                 curUAccount = response.getValue();
+                                curUAccount.setBirthday(Utils.getStrDateFromJsonDate(response.getValue().getBirthday()));
                             }
                         },
                         this,
@@ -496,7 +498,7 @@ public class MainActivity extends AppCompatActivity
         switch (position) {
             default:
             case 0:
-                fragment = new FragmentAccount();
+                fragment = new FragmentStrip();
                 break;
             case 1:
                 fragment = new FragmentAccount();

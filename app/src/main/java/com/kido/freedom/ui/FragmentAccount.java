@@ -47,6 +47,7 @@ import com.kido.freedom.model.Cities;
 import com.kido.freedom.model.ServerRegistration;
 import com.kido.freedom.model.ServerResponseMessage;
 import com.kido.freedom.utils.GsonRequest;
+import com.kido.freedom.utils.Utils;
 import com.kido.freedom.utils.VolleySingleton;
 
 import org.json.JSONException;
@@ -58,10 +59,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -73,8 +71,7 @@ public class FragmentAccount extends Fragment {
     private static final String API_POST_AVATAR64 = "/ChangePhotoBase64";
     private static final String API_POST_PROFILE = "/EditPrivateInfo";
     private static final String TAG = FragmentAccount.class.toString();
-    public Activity mActivity;
-    AlertDialog dialog;
+    private Activity mActivity;
     private Context fContext;
     private View rootView;
     private Spinner sItemsCity;
@@ -156,8 +153,9 @@ public class FragmentAccount extends Fragment {
         sName = (EditText) rootView.findViewById(R.id.eName);
         sName.setText(((MainActivity) this.getActivity()).curUAccount.getName());
         sBirthDay = (EditText) rootView.findViewById(R.id.eBirthday);
-        String sDate = (((MainActivity) this.getActivity()).curUAccount.getBirthday() == null ? "" :
-                ((MainActivity) this.getActivity()).curUAccount.getBirthday().toString());
+        String sDate =
+                (((MainActivity) this.getActivity()).curUAccount.getBirthday() == null ? "" :
+                        ((MainActivity) this.getActivity()).curUAccount.getBirthday().toString());
         sBirthDay.setText(sDate);
         sEmail = (EditText) rootView.findViewById(R.id.eEmail);
         sEmail.setText(((MainActivity) this.getActivity()).curUAccount.getEmail());
@@ -186,8 +184,8 @@ public class FragmentAccount extends Fragment {
             }
         });
 
-        Bitmap bitmap = ((BitmapDrawable) ((MainActivity) getActivity()).avatar.getDrawable()).getBitmap();
-        if (bitmap != null) {
+        if (((BitmapDrawable) ((MainActivity) getActivity()).avatar.getDrawable()).getBitmap() != null) {
+            Bitmap bitmap = ((BitmapDrawable) ((MainActivity) getActivity()).avatar.getDrawable()).getBitmap();
             avatarFragment.setImageBitmap(bitmap);
         }
     }
@@ -343,20 +341,6 @@ public class FragmentAccount extends Fragment {
 // format as defined by you, and it will also make sure that
 // it's a legal date
 
-    public boolean isValidDate(String date) {
-        SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy");
-        Date testDate = null;
-        try {
-            testDate = sdf.parse(date);
-        } catch (ParseException e) {
-            return false;
-        }
-        if (!sdf.format(testDate).equals(date)) {
-            return false;
-        }
-        return true;
-    }
-
 
     public Boolean IsValidate() {
         Boolean rez = false;
@@ -371,7 +355,7 @@ public class FragmentAccount extends Fragment {
             sEmail.setError("Укажите правильный email!");
             sEmail.requestFocus();
 //        } else if (!(Pattern.compile(DATE_PATTERN).matcher(sBirthDay.getText().toString())).matches()) {
-        } else if ((sBirthDay.getText().length() == 0) || (!isValidDate(sBirthDay.getText().toString()))) {
+        } else if ((sBirthDay.getText().length() == 0) || (!Utils.isValidDate(sBirthDay.getText().toString()))) {
             sBirthDay.setError("Укажите дату!");
             sBirthDay.requestFocus();
         } else if (sPhone.getText().length() == 0) {
@@ -438,11 +422,11 @@ public class FragmentAccount extends Fragment {
             //Edit Profile Data
             params = new JSONObject();
             try {
-                params.put("BirthDate", sBirthDay.getText().toString());
+                params.put("BirthDate", (Utils.getFormatedTicksFromDate(sBirthDay.getText().toString())));
                 params.put("CityId", ((Cities) sItemsCity.getSelectedItem()).getIdCity());
                 params.put("Email", sEmail.getText().toString());
                 params.put("Gender", sItemsGender.getSelectedItemPosition());
-                params.put("Id", 14080);//((MainActivity) getActivity()).curDevice.getProfileId());
+                params.put("Id", ((MainActivity) getActivity()).curDevice.getProfileId());
                 params.put("IsInvisible", true);
                 params.put("Name", sName.getText().toString());
                 params.put("Phone", sPhone.getText().toString());
@@ -463,7 +447,8 @@ public class FragmentAccount extends Fragment {
                                     Log.i(TAG, "ResponseServer - Load new profile data: " + sResult);
                                     Toast.makeText(fContext, sResult, Toast.LENGTH_SHORT).show();
                                     ((MainActivity) getActivity()).getProfileValues();
-                                    getActivity().getFragmentManager().popBackStack();
+                                    ((MainActivity) getActivity()).getAccount();
+//                                    getActivity().getFragmentManager().popBackStack();
 
                                 }
                             },

@@ -5,13 +5,12 @@ import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 import java.util.ArrayList;
-import java.util.Date;
 
 public class UserAccount {
 
     @SerializedName("BirthDate")
     @Expose(serialize = true, deserialize = true)
-    private Date birthday;
+    private String birthday;
 
     @SerializedName("Cities")
     @Expose(serialize = true, deserialize = true)
@@ -50,11 +49,11 @@ public class UserAccount {
     private String image;
 
 
-    public Date getBirthday() {
+    public String getBirthday() {
         return birthday;
     }
 
-    public void setBirthday(Date birthday) {
+    public void setBirthday(String birthday) {
         this.birthday = birthday;
     }
 
