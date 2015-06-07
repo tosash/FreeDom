@@ -26,7 +26,6 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -46,6 +45,7 @@ import com.kido.freedom.adapters.CitiesAdapter;
 import com.kido.freedom.model.Cities;
 import com.kido.freedom.model.ServerRegistration;
 import com.kido.freedom.model.ServerResponseMessage;
+import com.kido.freedom.utils.CircularNetworkImageView;
 import com.kido.freedom.utils.GsonRequest;
 import com.kido.freedom.utils.Utils;
 import com.kido.freedom.utils.VolleySingleton;
@@ -80,9 +80,7 @@ public class FragmentAccount extends Fragment {
     private EditText sBirthDay;
     private EditText sEmail;
     private EditText sPhone;
-    private ImageView avatarFragment;
-    private Bitmap profile_imageBitmap;
-    private Bitmap setphoto;
+    private CircularNetworkImageView avatarFragment;
     private boolean avatarChanged;
     private Button saveBtn;
     private Button recoveryBtn;
@@ -139,6 +137,15 @@ public class FragmentAccount extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         rootView = inflater.inflate(R.layout.fragment_account, container, false);
+        setRetainInstance(true);
+        return rootView;
+// And to get the actual User object that was selected, you can do this.
+//        User user = (User) ( (Spinner) findViewById(R.id.user) ).getSelectedItem();
+    }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
         fContext = getActivity().getApplicationContext();
         mActivity = (MainActivity) this.getActivity();
         setProfilePhoto();
@@ -169,14 +176,11 @@ public class FragmentAccount extends Fragment {
                 saveProfileData();
             }
         });
-        return rootView;
-// And to get the actual User object that was selected, you can do this.
-//        User user = (User) ( (Spinner) findViewById(R.id.user) ).getSelectedItem();
     }
 
     public void setProfilePhoto() {
         avatarChanged = false;
-        avatarFragment = (ImageView) rootView.findViewById(R.id.imageView);
+        avatarFragment = (CircularNetworkImageView) rootView.findViewById(R.id.imageView);
         avatarFragment.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -184,10 +188,11 @@ public class FragmentAccount extends Fragment {
             }
         });
 
-        if (((BitmapDrawable) ((MainActivity) getActivity()).avatar.getDrawable()).getBitmap() != null) {
-            Bitmap bitmap = ((BitmapDrawable) ((MainActivity) getActivity()).avatar.getDrawable()).getBitmap();
-            avatarFragment.setImageBitmap(bitmap);
-        }
+//        if (((BitmapDrawable) ((MainActivity) getActivity()).avatar.getDrawable()).getBitmap() != null) {
+//            Bitmap bitmap = ((BitmapDrawable) ((MainActivity) getActivity()).avatar.getDrawable()).getBitmap();
+//            avatarFragment.setImageBitmap(bitmap);
+//        }
+    avatarFragment.setImageUrl(((MainActivity)getActivity()).curUAccount.getImage(),VolleySingleton.getInstance(fContext).getImageLoader());
     }
 
     private void selectImage() {

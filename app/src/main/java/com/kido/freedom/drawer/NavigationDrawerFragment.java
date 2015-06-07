@@ -108,7 +108,6 @@ public class NavigationDrawerFragment extends Fragment implements NavigationDraw
     }
 
 
-
     public ActionBarDrawerToggle getActionBarDrawerToggle() {
         return mActionBarDrawerToggle;
     }
@@ -232,7 +231,7 @@ public class NavigationDrawerFragment extends Fragment implements NavigationDraw
     }
 
     public void setUserData(UserProfile cUser, Bitmap avatar) {
-         ImageView avatarContainer = (ImageView) mFragmentContainerView.findViewById(R.id.imgAvatar);
+        ImageView avatarContainer = (ImageView) mFragmentContainerView.findViewById(R.id.imgAvatar);
         ((TextView) mFragmentContainerView.findViewById(R.id.txtUserColor)).setText(cUser.getUserLevel());
         ((TextView) mFragmentContainerView.findViewById(R.id.txtUsername)).setText(cUser.getUserName());
         ((TextView) mFragmentContainerView.findViewById(R.id.txtStatus)).setText(cUser.getUserStatus());

@@ -4,7 +4,9 @@ package com.kido.freedom.ui;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -36,7 +38,7 @@ import java.util.List;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class FragmentStrip extends Fragment {
+public class FragmentStrip extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
     private static String API_GET_STRIP = "/GetTape?profileId=";
     private Activity mActivity;
     private Context fContext;
@@ -45,6 +47,7 @@ public class FragmentStrip extends Fragment {
     private CardView cardView;
     private List<Strip> strips;
     private RecyclerView.Adapter mAdapter;
+    private SwipeRefreshLayout mSwipeRefreshLayout;
     private String TAG = FragmentStrip.class.toString();
 
 
@@ -53,6 +56,7 @@ public class FragmentStrip extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         rootView = inflater.inflate(R.layout.fragment_strip, container, false);
+        setRetainInstance(true);
         return rootView;
     }
 
@@ -69,11 +73,17 @@ public class FragmentStrip extends Fragment {
         recyclerView.setLayoutManager(llm);
         mAdapter = new StripAdapter(strips);
         recyclerView.setAdapter(mAdapter);
+        mSwipeRefreshLayout = (SwipeRefreshLayout) rootView.findViewById(R.id.id_swype);
+        mSwipeRefreshLayout.setOnRefreshListener(this);
+        // делаем повеселее
+        mSwipeRefreshLayout.setColorSchemeColors(Color.BLUE, Color.GREEN, Color.YELLOW, Color.RED);
+
         getStripFromServer();
     }
 
     public void getStripFromServer() {
         ((MainActivity) getActivity()).showProgressDialog();
+        mSwipeRefreshLayout.setRefreshing(true);
         VolleySingleton.getInstance(fContext).addToRequestQueue(
                 new GsonRequest<ServerStripResponse>(Request.Method.GET,
                         API_GET_STRIP + ((MainActivity) getActivity()).curDevice.getProfileId(),
@@ -83,6 +93,7 @@ public class FragmentStrip extends Fragment {
                             @Override
                             public void onResponse(ServerStripResponse response) {
                                 ((MainActivity) getActivity()).hideProgressDialog();
+                                mSwipeRefreshLayout.setRefreshing(false);
 //                                for (int i = 0; i < response.getValue().size(); i++) {
 //                                    response.getValue().
 //                                }
@@ -95,6 +106,7 @@ public class FragmentStrip extends Fragment {
                             @Override
                             public void onErrorResponse(VolleyError error) {
                                 ((MainActivity) getActivity()).hideProgressDialog();
+                                mSwipeRefreshLayout.setRefreshing(false);
                                 Log.e(TAG, "err: " + error.toString());
                                 if (error instanceof TimeoutError || error instanceof NoConnectionError) {
                                     Toast.makeText(fContext, "TimeOut Error", Toast.LENGTH_LONG).show();
@@ -112,4 +124,8 @@ public class FragmentStrip extends Fragment {
                         null), TAG);
     }
 
+    @Override
+    public void onRefresh() {
+        getStripFromServer();
+    }
 }

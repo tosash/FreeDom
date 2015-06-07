@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -493,6 +494,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onNavigationDrawerItemSelected(int position) {
+
         Fragment fragment;
         FragmentManager fragmentManager = getFragmentManager(); // For AppCompat use getSupportFragmentManager
         switch (position) {
@@ -504,9 +506,9 @@ public class MainActivity extends AppCompatActivity
                 fragment = new FragmentAccount();
                 break;
         }
-//        fragmentManager.beginTransaction()
-//                .replace(R.id.container, fragment)
-//                .commit();
+        fragmentManager.beginTransaction()
+                .replace(R.id.container, fragment)
+                .commit();
     }
 
 
