@@ -29,6 +29,7 @@ import com.kido.freedom.R;
 import com.kido.freedom.adapters.StripAdapter;
 import com.kido.freedom.model.ServerStripResponse;
 import com.kido.freedom.model.Strip;
+import com.kido.freedom.utils.CustomSwype;
 import com.kido.freedom.utils.GsonRequest;
 import com.kido.freedom.utils.VolleySingleton;
 
@@ -47,9 +48,10 @@ public class FragmentStrip extends Fragment implements SwipeRefreshLayout.OnRefr
     private CardView cardView;
     private List<Strip> strips;
     private RecyclerView.Adapter mAdapter;
-    private SwipeRefreshLayout mSwipeRefreshLayout;
+    private CustomSwype mSwipeRefreshLayout;
     private String TAG = FragmentStrip.class.toString();
-
+    private boolean mMeasured = false;
+    private boolean mPreMeasureRefreshing = false;
 
 
     @Override
@@ -73,16 +75,15 @@ public class FragmentStrip extends Fragment implements SwipeRefreshLayout.OnRefr
         recyclerView.setLayoutManager(llm);
         mAdapter = new StripAdapter(strips);
         recyclerView.setAdapter(mAdapter);
-        mSwipeRefreshLayout = (SwipeRefreshLayout) rootView.findViewById(R.id.id_swype);
+        mSwipeRefreshLayout = (CustomSwype) rootView.findViewById(R.id.id_swype);
         mSwipeRefreshLayout.setOnRefreshListener(this);
         // делаем повеселее
-        mSwipeRefreshLayout.setColorSchemeColors(Color.BLUE, Color.GREEN, Color.YELLOW, Color.RED);
-
+        mSwipeRefreshLayout.setColorSchemeColors(Color.GRAY, Color.BLUE, Color.YELLOW);
         getStripFromServer();
     }
 
     public void getStripFromServer() {
-        ((MainActivity) getActivity()).showProgressDialog();
+//        ((MainActivity) getActivity()).showProgressDialog();
         mSwipeRefreshLayout.setRefreshing(true);
         VolleySingleton.getInstance(fContext).addToRequestQueue(
                 new GsonRequest<ServerStripResponse>(Request.Method.GET,
@@ -92,7 +93,7 @@ public class FragmentStrip extends Fragment implements SwipeRefreshLayout.OnRefr
                         new Response.Listener<ServerStripResponse>() {
                             @Override
                             public void onResponse(ServerStripResponse response) {
-                                ((MainActivity) getActivity()).hideProgressDialog();
+//                                ((MainActivity) getActivity()).hideProgressDialog();
                                 mSwipeRefreshLayout.setRefreshing(false);
 //                                for (int i = 0; i < response.getValue().size(); i++) {
 //                                    response.getValue().
@@ -105,7 +106,7 @@ public class FragmentStrip extends Fragment implements SwipeRefreshLayout.OnRefr
                         new Response.ErrorListener() {
                             @Override
                             public void onErrorResponse(VolleyError error) {
-                                ((MainActivity) getActivity()).hideProgressDialog();
+//                                ((MainActivity) getActivity()).hideProgressDialog();
                                 mSwipeRefreshLayout.setRefreshing(false);
                                 Log.e(TAG, "err: " + error.toString());
                                 if (error instanceof TimeoutError || error instanceof NoConnectionError) {
@@ -128,4 +129,6 @@ public class FragmentStrip extends Fragment implements SwipeRefreshLayout.OnRefr
     public void onRefresh() {
         getStripFromServer();
     }
+
+
 }
