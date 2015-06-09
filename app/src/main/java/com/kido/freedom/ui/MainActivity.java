@@ -11,10 +11,12 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.support.annotation.Nullable;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.telephony.TelephonyManager;
+import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -119,14 +121,22 @@ public class MainActivity extends AppCompatActivity
         mNavigationDrawerFragment.setup(R.id.fragment_drawer, (DrawerLayout) findViewById(R.id.drawer), mToolbar);
         // populate the navigation drawer
 
-      if (savedInstanceState==null){
-          initDevice();
-      }else{
-          Gson gson=new Gson();
-          String s=savedInstanceState.getString("Device");
-          curDevice=gson.fromJson(s,Device.class);
-      }
+        if (savedInstanceState == null) {
+            initDevice();
+        } else {
+//            Gson gson = new Gson();
+//            String s = savedInstanceState.getString("Device");
+//            curDevice = gson.fromJson(s, Device.class);
+//            mNavigationDrawerFragment.setUserData(curUser, null);//BitmapFactory.decodeResource(getResources(), R.drawable.avatar));
+//            avatar.setImageUrl(curUser.getUserImage(), VolleySingleton.getInstance(fContext).getImageLoader());
+            mCoins.setText(Double.toString(savedInstanceState.getDouble("Money")));
+            mPoints.setText(Integer.toString(savedInstanceState.getInt("Points")));
+
+
+        }
     }
+
+
 
     private void initDesign() {
         pDialog = (CircularProgressView) findViewById(R.id.progress_view);
@@ -170,16 +180,32 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        Gson gson=new Gson();
-        String s=gson.toJson(curDevice);
-        outState.putString("Device",s);
+        String s;
+        Gson gson = new Gson();
+         s = gson.toJson(curDevice);
+        outState.putString("Device", s);
+        s=gson.toJson(curBalance);
+        outState.putString("Balance",s);
+        s=gson.toJson(curUAccount);
+        outState.putString("Account",s);
+        s=gson.toJson(curUser);
+        outState.putString("Profile",s);
+        outState.putDouble("Money",curBalance.getMoney());
+        outState.putInt("Points",curBalance.getPoints());
     }
 
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
-        Gson gson=new Gson();
-        String s=savedInstanceState.getString("Device");
-        curDevice=gson.fromJson(s,Device.class);
+        String s;
+        Gson gson = new Gson();
+        s = savedInstanceState.getString("Device");
+        curDevice = gson.fromJson(s, Device.class);
+        s = savedInstanceState.getString("Balance");
+        curBalance = gson.fromJson(s, Balance.class);
+        s = savedInstanceState.getString("Account");
+        curUAccount = gson.fromJson(s, UserAccount.class);
+        s = savedInstanceState.getString("Profile");
+        curUser = gson.fromJson(s,UserProfile.class);
         super.onRestoreInstanceState(savedInstanceState);
 
     }
@@ -217,7 +243,7 @@ public class MainActivity extends AppCompatActivity
                                 hideProgressDialog();
                                 curUser = response.getValue();
                                 mNavigationDrawerFragment.setUserData(curUser, null);//BitmapFactory.decodeResource(getResources(), R.drawable.avatar));
-                                CircularNetworkImageView avatar = (CircularNetworkImageView) findViewById(R.id.imgAvatar);
+
                                 avatar.setImageUrl(curUser.getUserImage(), VolleySingleton.getInstance(fContext).getImageLoader());
                             }
                         },
@@ -530,12 +556,12 @@ public class MainActivity extends AppCompatActivity
             switch (position) {
                 default:
                 case 0:
-                    fragment=fragmentManager.findFragmentById(R.layout.fragment_strip);
-                    fragment = ((fragment==null)? new FragmentStrip():fragment);
+                    fragment = fragmentManager.findFragmentById(R.layout.fragment_strip);
+                    fragment = ((fragment == null) ? new FragmentStrip() : fragment);
                     break;
                 case 1:
-                    fragment=fragmentManager.findFragmentById(R.layout.fragment_account);
-                    fragment = ((fragment==null)? new FragmentAccount():fragment);
+                    fragment = fragmentManager.findFragmentById(R.layout.fragment_account);
+                    fragment = ((fragment == null) ? new FragmentAccount() : fragment);
                     break;
             }
             fragmentManager.beginTransaction()
@@ -599,5 +625,16 @@ public class MainActivity extends AppCompatActivity
     @Override
     public Object onRetainCustomNonConfigurationInstance() {
         return super.onRetainCustomNonConfigurationInstance();
+    }
+
+    public void clearBackStack() {
+        FragmentManager manager = getFragmentManager();
+        if (manager.getBackStackEntryCount() > 0) {
+            FragmentManager.BackStackEntry first = manager.getBackStackEntryAt(0);
+            manager.popBackStack(first.getId(), FragmentManager.POP_BACK_STACK_INCLUSIVE);
+        }
+//        while (getSupportFragmentManager().getBackStackEntryCount() > 0){
+//            getSupportFragmentManager().popBackStackImmediate();
+//        }
     }
 }

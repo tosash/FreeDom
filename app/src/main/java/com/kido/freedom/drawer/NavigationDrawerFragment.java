@@ -13,6 +13,7 @@ import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Shader;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -24,12 +25,12 @@ import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.kido.freedom.R;
 import com.kido.freedom.model.UserProfile;
+import com.kido.freedom.utils.CircularNetworkImageView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -69,6 +70,12 @@ public class NavigationDrawerFragment extends Fragment implements NavigationDraw
     private int mCurrentSelectedPosition = 0;
     private boolean mFromSavedInstanceState;
     private boolean mUserLearnedDrawer;
+    private View view;
+    private CircularNetworkImageView avatarContainer;
+    private TextView mtxtUserColor;
+    private TextView mtxtUsername;
+    private TextView mtxtStatus;
+    private ProgressBar mPROGRESS_BAR;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -79,29 +86,49 @@ public class NavigationDrawerFragment extends Fragment implements NavigationDraw
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
         mUserLearnedDrawer = sp.getBoolean(PREF_USER_LEARNED_DRAWER, false);
 
-        if (savedInstanceState != null) {
-            mCurrentSelectedPosition = savedInstanceState.getInt(STATE_SELECTED_POSITION);
-            mFromSavedInstanceState = true;
-        }
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_navigation_drawer, container, false);
+        view = inflater.inflate(R.layout.fragment_navigation_drawer, container, false);
+        return view;
+    }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        mtxtUserColor=(TextView)view.findViewById(R.id.txtUserColor);
+        mtxtUsername=(TextView) view.findViewById(R.id.txtUsername);
+        mtxtStatus=(TextView) view.findViewById(R.id.txtStatus);
+        mPROGRESS_BAR=(ProgressBar) view.findViewById(R.id.PROGRESS_BAR);
+        avatarContainer=(CircularNetworkImageView)view.findViewById(R.id.imgAvatar);
+
         mDrawerList = (RecyclerView) view.findViewById(R.id.drawerList);
         LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
         layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         mDrawerList.setLayoutManager(layoutManager);
         mDrawerList.setHasFixedSize(true);
-
         final List<NavigationItem> navigationItems = getMenu();
         NavigationDrawerAdapter adapter = new NavigationDrawerAdapter(navigationItems);
         adapter.setNavigationDrawerCallbacks(this);
         mDrawerList.setAdapter(adapter);
-        //mFromSavedInstanceState = (savedInstanceState != null);
-        selectItem(mCurrentSelectedPosition,(savedInstanceState != null));
-        return view;
+
+        if (savedInstanceState != null) {
+            mCurrentSelectedPosition = savedInstanceState.getInt(STATE_SELECTED_POSITION);
+            mFromSavedInstanceState = true;
+            mtxtUserColor.setText(savedInstanceState.getString("UserLevel"));
+            mtxtUsername.setText(savedInstanceState.getString("UserName"));
+            mtxtStatus.setText(savedInstanceState.getString("UserStatus"));
+            mPROGRESS_BAR.setMax(savedInstanceState.getInt("MaxPoints"));
+            mPROGRESS_BAR.setSecondaryProgress(savedInstanceState.getInt("UserPoints"));
+            avatarContainer.setImageBitmap((Bitmap) savedInstanceState.getParcelable("Avatar"));
+        }
+
+        mFromSavedInstanceState = (savedInstanceState != null);
+        selectItem(mCurrentSelectedPosition,mFromSavedInstanceState);
+
     }
 
     public boolean isDrawerOpen() {
@@ -119,7 +146,7 @@ public class NavigationDrawerFragment extends Fragment implements NavigationDraw
 
     @Override
     public void onNavigationDrawerItemSelected(int position, boolean fromSavedInstanceState) {
-        selectItem(position,fromSavedInstanceState);
+        selectItem(position, fromSavedInstanceState);
     }
 
     public List<NavigationItem> getMenu() {
@@ -224,6 +251,14 @@ public class NavigationDrawerFragment extends Fragment implements NavigationDraw
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putInt(STATE_SELECTED_POSITION, mCurrentSelectedPosition);
+        BitmapDrawable dr=(BitmapDrawable) avatarContainer.getDrawable();
+        Bitmap bm=(dr==null?null:dr.getBitmap());
+        outState.putParcelable("Avatar", bm);
+        outState.putString("UserLevel", mtxtUserColor.getText().toString());
+        outState.putString("UserName", mtxtUsername.getText().toString());
+        outState.putString("UserStatus", mtxtStatus.getText().toString());
+        outState.putInt("UserPoints", mPROGRESS_BAR.getSecondaryProgress());
+        outState.putInt("MaxPoints", mPROGRESS_BAR.getMax());
     }
 
     @Override
@@ -234,12 +269,12 @@ public class NavigationDrawerFragment extends Fragment implements NavigationDraw
     }
 
     public void setUserData(UserProfile cUser, Bitmap avatar) {
-        ImageView avatarContainer = (ImageView) mFragmentContainerView.findViewById(R.id.imgAvatar);
-        ((TextView) mFragmentContainerView.findViewById(R.id.txtUserColor)).setText(cUser.getUserLevel());
-        ((TextView) mFragmentContainerView.findViewById(R.id.txtUsername)).setText(cUser.getUserName());
-        ((TextView) mFragmentContainerView.findViewById(R.id.txtStatus)).setText(cUser.getUserStatus());
-        ((ProgressBar) mFragmentContainerView.findViewById(R.id.PROGRESS_BAR)).setMax(Integer.parseInt(cUser.getUserPointsNextLevel()));
-        ((ProgressBar) mFragmentContainerView.findViewById(R.id.PROGRESS_BAR)).setSecondaryProgress(Integer.parseInt(cUser.getUserPoints()));
+
+        mtxtUserColor.setText(cUser.getUserLevel());
+        mtxtUsername.setText(cUser.getUserName());
+        mtxtStatus.setText(cUser.getUserStatus());
+        mPROGRESS_BAR.setMax(Integer.parseInt(cUser.getUserPointsNextLevel()));
+        mPROGRESS_BAR.setSecondaryProgress(Integer.parseInt(cUser.getUserPoints()));
         if (avatar == null) {
 //            avatarContainer.setImageDrawable(new RoundImage(BitmapFactory.decodeResource(getResources(), R.drawable.ic_no_user)));
         } else {
