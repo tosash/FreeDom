@@ -25,6 +25,7 @@ import com.android.volley.Response;
 import com.android.volley.ServerError;
 import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
+import com.google.gson.Gson;
 import com.kido.freedom.R;
 import com.kido.freedom.adapters.StripAdapter;
 import com.kido.freedom.model.ServerStripResponse;
@@ -34,6 +35,7 @@ import com.kido.freedom.utils.GsonRequest;
 import com.kido.freedom.utils.VolleySingleton;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -52,22 +54,32 @@ public class FragmentStrip extends Fragment implements SwipeRefreshLayout.OnRefr
     private String TAG = FragmentStrip.class.toString();
     private boolean mMeasured = false;
     private boolean mPreMeasureRefreshing = false;
-
+    private boolean isTaskRunning = false;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        rootView = inflater.inflate(R.layout.fragment_strip, container, false);
-        setRetainInstance(true);
-        return rootView;
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+//        setRetainInstance(true);
     }
 
     @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        rootView = inflater.inflate(R.layout.fragment_strip, container, false);
+        return rootView;
+    }
+
+
+    @Override
     public void onActivityCreated(Bundle savedInstanceState) {
+
         super.onActivityCreated(savedInstanceState);
+
         fContext = getActivity().getApplicationContext();
         mActivity = (MainActivity) getActivity();
-        strips = new ArrayList<Strip>();
+
+        if (strips == null) {
+            strips = new ArrayList<Strip>();
+        }
         recyclerView = (RecyclerView) rootView.findViewById(R.id.cardList);
         recyclerView.setHasFixedSize(true);
         LinearLayoutManager llm = new LinearLayoutManager(fContext);
@@ -77,52 +89,71 @@ public class FragmentStrip extends Fragment implements SwipeRefreshLayout.OnRefr
         recyclerView.setAdapter(mAdapter);
         mSwipeRefreshLayout = (CustomSwype) rootView.findViewById(R.id.id_swype);
         mSwipeRefreshLayout.setOnRefreshListener(this);
-        // делаем повеселее
-        mSwipeRefreshLayout.setColorSchemeColors(Color.GRAY, Color.BLUE, Color.YELLOW);
-        getStripFromServer();
+        mSwipeRefreshLayout.setColorSchemeColors(Color.rgb(255, 155, 30));
+
+        if (isTaskRunning) {
+            mSwipeRefreshLayout.setRefreshing(true);
+        }
+        if (savedInstanceState == null) {
+            getStripFromServer();
+        } else {
+            Gson gson = new Gson();
+            String s = savedInstanceState.getString("Strips");
+            Strip[] obj = gson.fromJson(s, Strip[].class);
+            List<Strip> sstrips = Arrays.asList(obj);
+            strips.addAll(sstrips);
+            mAdapter.notifyDataSetChanged();
+        }
+
     }
 
     public void getStripFromServer() {
 //        ((MainActivity) getActivity()).showProgressDialog();
-        mSwipeRefreshLayout.setRefreshing(true);
-        VolleySingleton.getInstance(fContext).addToRequestQueue(
-                new GsonRequest<ServerStripResponse>(Request.Method.GET,
-                        API_GET_STRIP + ((MainActivity) getActivity()).curDevice.getProfileId(),
-                        ServerStripResponse.class,
-                        null,
-                        new Response.Listener<ServerStripResponse>() {
-                            @Override
-                            public void onResponse(ServerStripResponse response) {
+        if (!isTaskRunning) {
+            isTaskRunning = true;
+            mSwipeRefreshLayout.setRefreshing(true);
+            Log.d(TAG, "Query: getStripFromServer: " + Long.toString(System.currentTimeMillis()));
+            VolleySingleton.getInstance(fContext).addToRequestQueue(
+                    new GsonRequest<ServerStripResponse>(Request.Method.GET,
+                            API_GET_STRIP + ((MainActivity) getActivity()).curDevice.getProfileId(),
+                            ServerStripResponse.class,
+                            null,
+                            new Response.Listener<ServerStripResponse>() {
+                                @Override
+                                public void onResponse(ServerStripResponse response) {
 //                                ((MainActivity) getActivity()).hideProgressDialog();
-                                mSwipeRefreshLayout.setRefreshing(false);
+                                    isTaskRunning = false;
+                                    mSwipeRefreshLayout.setRefreshing(false);
 //                                for (int i = 0; i < response.getValue().size(); i++) {
 //                                    response.getValue().
 //                                }
-                                strips.clear();
-                                strips.addAll(response.getValue());
-                                mAdapter.notifyDataSetChanged();
-                            }
-                        },
-                        new Response.ErrorListener() {
-                            @Override
-                            public void onErrorResponse(VolleyError error) {
-//                                ((MainActivity) getActivity()).hideProgressDialog();
-                                mSwipeRefreshLayout.setRefreshing(false);
-                                Log.e(TAG, "err: " + error.toString());
-                                if (error instanceof TimeoutError || error instanceof NoConnectionError) {
-                                    Toast.makeText(fContext, "TimeOut Error", Toast.LENGTH_LONG).show();
-                                } else if (error instanceof AuthFailureError) {
-                                    Toast.makeText(fContext, "AuthFailureError", Toast.LENGTH_LONG).show();
-                                } else if (error instanceof ServerError) {
-                                    Toast.makeText(fContext, "ServerError", Toast.LENGTH_LONG).show();
-                                } else if (error instanceof NetworkError) {
-                                    Toast.makeText(fContext, "NetworkError", Toast.LENGTH_LONG).show();
-                                } else if (error instanceof ParseError) {
-                                    Toast.makeText(fContext, "ParseError", Toast.LENGTH_LONG).show();
+                                    strips.clear();
+                                    strips.addAll(response.getValue());
+                                    mAdapter.notifyDataSetChanged();
                                 }
-                            }
-                        },
-                        null), TAG);
+                            },
+                            new Response.ErrorListener() {
+                                @Override
+                                public void onErrorResponse(VolleyError error) {
+//                                ((MainActivity) getActivity()).hideProgressDialog();
+                                    isTaskRunning = false;
+                                    mSwipeRefreshLayout.setRefreshing(false);
+                                    Log.e(TAG, "err: " + error.toString());
+                                    if (error instanceof TimeoutError || error instanceof NoConnectionError) {
+                                        Toast.makeText(fContext, "TimeOut Error", Toast.LENGTH_LONG).show();
+                                    } else if (error instanceof AuthFailureError) {
+                                        Toast.makeText(fContext, "AuthFailureError", Toast.LENGTH_LONG).show();
+                                    } else if (error instanceof ServerError) {
+                                        Toast.makeText(fContext, "ServerError", Toast.LENGTH_LONG).show();
+                                    } else if (error instanceof NetworkError) {
+                                        Toast.makeText(fContext, "NetworkError", Toast.LENGTH_LONG).show();
+                                    } else if (error instanceof ParseError) {
+                                        Toast.makeText(fContext, "ParseError", Toast.LENGTH_LONG).show();
+                                    }
+                                }
+                            },
+                            null), TAG);
+        }
     }
 
     @Override
@@ -130,5 +161,32 @@ public class FragmentStrip extends Fragment implements SwipeRefreshLayout.OnRefr
         getStripFromServer();
     }
 
+    @Override
+    public void onDetach() {
+        if (mSwipeRefreshLayout != null && mSwipeRefreshLayout.isShown()) {
+            mSwipeRefreshLayout.setRefreshing(false);
+            VolleySingleton.getInstance(fContext).cancelPendingRequests(TAG);
 
+        }
+        super.onDetach();
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        Gson gson = new Gson();
+        String s = gson.toJson(strips);
+        outState.putString("Strips", s);
+    }
+
+
+    @Override
+    public void onViewStateRestored(Bundle savedInstanceState) {
+        Gson gson = new Gson();
+        String s = savedInstanceState.getString("Strips");
+        Strip[] obj = gson.fromJson(s, Strip[].class);
+        strips = Arrays.asList(obj);
+        super.onViewStateRestored(savedInstanceState);
+
+    }
 }

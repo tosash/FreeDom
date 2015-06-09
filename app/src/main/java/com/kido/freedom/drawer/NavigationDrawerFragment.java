@@ -99,7 +99,8 @@ public class NavigationDrawerFragment extends Fragment implements NavigationDraw
         NavigationDrawerAdapter adapter = new NavigationDrawerAdapter(navigationItems);
         adapter.setNavigationDrawerCallbacks(this);
         mDrawerList.setAdapter(adapter);
-        selectItem(mCurrentSelectedPosition);
+        //mFromSavedInstanceState = (savedInstanceState != null);
+        selectItem(mCurrentSelectedPosition,(savedInstanceState != null));
         return view;
     }
 
@@ -117,8 +118,8 @@ public class NavigationDrawerFragment extends Fragment implements NavigationDraw
     }
 
     @Override
-    public void onNavigationDrawerItemSelected(int position) {
-        selectItem(position);
+    public void onNavigationDrawerItemSelected(int position, boolean fromSavedInstanceState) {
+        selectItem(position,fromSavedInstanceState);
     }
 
     public List<NavigationItem> getMenu() {
@@ -182,15 +183,17 @@ public class NavigationDrawerFragment extends Fragment implements NavigationDraw
         mDrawerLayout.setDrawerListener(mActionBarDrawerToggle);
     }
 
-    private void selectItem(int position) {
+    private void selectItem(int position, boolean fromSavedInstanceState) {
         mCurrentSelectedPosition = position;
+        if (mDrawerList != null) {
+            ((NavigationDrawerAdapter) mDrawerList.getAdapter()).selectPosition(position);
+        }
         if (mDrawerLayout != null) {
             mDrawerLayout.closeDrawer(mFragmentContainerView);
         }
         if (mCallbacks != null) {
-            mCallbacks.onNavigationDrawerItemSelected(position);
+            mCallbacks.onNavigationDrawerItemSelected(position,fromSavedInstanceState);
         }
-        ((NavigationDrawerAdapter) mDrawerList.getAdapter()).selectPosition(position);
     }
 
     public void openDrawer() {

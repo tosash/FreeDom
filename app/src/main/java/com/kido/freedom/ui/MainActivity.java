@@ -6,7 +6,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.graphics.BitmapFactory;
+import android.content.res.Configuration;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -36,6 +36,7 @@ import com.github.rahatarmanahmed.cpv.CircularProgressView;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
+import com.google.gson.Gson;
 import com.kido.freedom.R;
 import com.kido.freedom.drawer.NavigationDrawerCallbacks;
 import com.kido.freedom.drawer.NavigationDrawerFragment;
@@ -104,9 +105,9 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         fContext = getApplicationContext();
+
         mToolbar = (Toolbar) findViewById(R.id.toolbar_actionbar);
         setSupportActionBar(mToolbar);
-
         initDesign();
 
 
@@ -118,7 +119,13 @@ public class MainActivity extends AppCompatActivity
         mNavigationDrawerFragment.setup(R.id.fragment_drawer, (DrawerLayout) findViewById(R.id.drawer), mToolbar);
         // populate the navigation drawer
 
-        initDevice();
+      if (savedInstanceState==null){
+          initDevice();
+      }else{
+          Gson gson=new Gson();
+          String s=savedInstanceState.getString("Device");
+          curDevice=gson.fromJson(s,Device.class);
+      }
     }
 
     private void initDesign() {
@@ -158,6 +165,28 @@ public class MainActivity extends AppCompatActivity
         getUserBalance();
         getProfileValues();
         getAccount();
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        Gson gson=new Gson();
+        String s=gson.toJson(curDevice);
+        outState.putString("Device",s);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        Gson gson=new Gson();
+        String s=savedInstanceState.getString("Device");
+        curDevice=gson.fromJson(s,Device.class);
+        super.onRestoreInstanceState(savedInstanceState);
+
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
     }
 
     public void showProgressDialog() {
@@ -493,24 +522,27 @@ public class MainActivity extends AppCompatActivity
 
 
     @Override
-    public void onNavigationDrawerItemSelected(int position) {
-
+    public void onNavigationDrawerItemSelected(int position, boolean fromSavedInstanceState) {
         Fragment fragment;
-        FragmentManager fragmentManager = getFragmentManager(); // For AppCompat use getSupportFragmentManager
-        switch (position) {
-            default:
-            case 0:
-                fragment = new FragmentStrip();
-                break;
-            case 1:
-                fragment = new FragmentAccount();
-                break;
-        }
-        fragmentManager.beginTransaction()
-                .replace(R.id.container, fragment)
-                .commit();
-    }
+        if (!fromSavedInstanceState) {
+            FragmentManager fragmentManager = getFragmentManager(); // For AppCompat use getSupportFragmentManager
 
+            switch (position) {
+                default:
+                case 0:
+                    fragment=fragmentManager.findFragmentById(R.layout.fragment_strip);
+                    fragment = ((fragment==null)? new FragmentStrip():fragment);
+                    break;
+                case 1:
+                    fragment=fragmentManager.findFragmentById(R.layout.fragment_account);
+                    fragment = ((fragment==null)? new FragmentAccount():fragment);
+                    break;
+            }
+            fragmentManager.beginTransaction()
+                    .replace(R.id.container, fragment)
+                    .commit();
+        }
+    }
 
     @Override
     public void onBackPressed() {
@@ -564,5 +596,8 @@ public class MainActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
-
+    @Override
+    public Object onRetainCustomNonConfigurationInstance() {
+        return super.onRetainCustomNonConfigurationInstance();
+    }
 }

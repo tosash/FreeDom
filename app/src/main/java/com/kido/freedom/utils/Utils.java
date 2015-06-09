@@ -1,6 +1,10 @@
 package com.kido.freedom.utils;
 
 
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -74,6 +78,12 @@ public abstract class Utils {
         DateFormat df = new SimpleDateFormat("dd.MM.yyyy");
         String sd = df.format(testDate);
         return sd;
+    }
+
+    public static boolean isNetworkAvailable(Context mCtx) {
+        ConnectivityManager connectivityManager = (ConnectivityManager) mCtx.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 
 

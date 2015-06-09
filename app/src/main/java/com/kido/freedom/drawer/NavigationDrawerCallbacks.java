@@ -1,5 +1,5 @@
 package com.kido.freedom.drawer;
 
 public interface NavigationDrawerCallbacks {
-    void onNavigationDrawerItemSelected(int position);
+    void onNavigationDrawerItemSelected(int position, boolean fromSavedInstanceState);
 }
