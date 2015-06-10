@@ -104,7 +104,7 @@ public class NavigationDrawerFragment extends Fragment implements NavigationDraw
         mtxtStatus=(TextView) view.findViewById(R.id.txtStatus);
         mPROGRESS_BAR=(ProgressBar) view.findViewById(R.id.PROGRESS_BAR);
         avatarContainer=(CircularNetworkImageView)view.findViewById(R.id.imgAvatar);
-
+        avatarContainer.setErrorImageResId(R.drawable.ic_no_user);
         mDrawerList = (RecyclerView) view.findViewById(R.id.drawerList);
         LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
         layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
@@ -151,8 +151,8 @@ public class NavigationDrawerFragment extends Fragment implements NavigationDraw
 
     public List<NavigationItem> getMenu() {
         List<NavigationItem> items = new ArrayList<NavigationItem>();
-        items.add(new NavigationItem("item 1", getResources().getDrawable(R.drawable.ic_menu_check)));
-        items.add(new NavigationItem("item 2", getResources().getDrawable(R.drawable.ic_menu_check)));
+        items.add(new NavigationItem("Лента", getResources().getDrawable(R.drawable.ic_menu_check)));
+        items.add(new NavigationItem("Миссии", getResources().getDrawable(R.drawable.ic_menu_check)));
         items.add(new NavigationItem("item 3", getResources().getDrawable(R.drawable.ic_menu_check)));
         return items;
     }

@@ -1,4 +1,4 @@
-package com.kido.freedom.model;
+package com.kido.freedom.model.ServerResponse;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;

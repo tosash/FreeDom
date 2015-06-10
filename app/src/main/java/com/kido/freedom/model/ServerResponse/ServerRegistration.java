@@ -1,10 +1,11 @@
-package com.kido.freedom.model;
+package com.kido.freedom.model.ServerResponse;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 
-public class ServerAccountResponse {
+public class ServerRegistration {
+
     @SerializedName("Message")
     @Expose(serialize = false, deserialize = true)
     private String message;
@@ -15,14 +16,14 @@ public class ServerAccountResponse {
 
     @SerializedName("Value")
     @Expose(serialize = false, deserialize = true)
-    private UserAccount value;
+    private String value;
 
     public String getMessage() {
         return message;
     }
 
     public void setMessage(String message) {
-        this.message = message;
+        message = message;
     }
 
     public int getStatusResponse() {
@@ -30,14 +31,16 @@ public class ServerAccountResponse {
     }
 
     public void setStatusResponse(int statusResponse) {
-        this.statusResponse = statusResponse;
+        statusResponse = statusResponse;
     }
 
-    public UserAccount getValue() {
+    public String getValue() {
         return value;
     }
 
-    public void setValue(UserAccount value) {
-        this.value = value;
+    public void setValue(String value) {
+        value = value;
     }
+
+
 }

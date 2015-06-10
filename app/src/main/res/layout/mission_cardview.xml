@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical">
+
+    <android.support.v7.widget.CardView
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:clickable="false"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:layout_marginRight="5dp"
+        android:layout_marginLeft="5dp"
+        android:layout_margin="5dp"
+        android:layout_marginTop="5dp">
+        card_view:cardCornerRadius="15dp"
+        card_view:cardElevation="5dp"
+        card_view:cardUseCompatPadding="true"
+        card_view:contentPadding="5dp">
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <RelativeLayout
+                android:orientation="horizontal"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:background="#25301e21">
+
+                <TextView
+                    android:id="@+id/txt_name"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:alpha="0.8"
+                    android:textSize="20sp"
+                    android:layout_gravity="center_horizontal"
+                    android:textStyle="bold"
+                    android:textColor="#ff000000"
+                    android:layout_centerVertical="true"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentStart="true"
+                    android:layout_toLeftOf="@+id/txt_points"
+                    android:layout_toStartOf="@+id/txt_points"
+                    android:layout_marginRight="10dp"
+                    android:textAlignment="gravity"
+                    android:gravity="left" />
+
+                <TextView
+                    android:id="@+id/txt_points"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="@dimen/activity_horizontal_margin"
+                    android:paddingRight="@dimen/activity_horizontal_margin"
+                    android:alpha="0.8"
+                    android:textSize="20sp"
+                    android:textColor="#ff000000"
+                    android:layout_gravity="top|left"
+                    android:layout_centerVertical="true"
+                    android:layout_toLeftOf="@+id/img_coins"
+                    android:layout_toStartOf="@+id/img_coins"
+                    android:textAlignment="gravity"
+                    android:gravity="right" />
+
+                <ImageView
+                android:id="@+id/img_coins"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:src="@drawable/coins"
+                    android:layout_gravity="top|left"
+                    android:layout_alignParentTop="true"
+                    android:layout_alignParentRight="true"
+                    android:layout_alignParentEnd="true"
+                    android:layout_margin="3dp" />
+
+            </RelativeLayout>
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/tasksList"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scrollbars="vertical" />
+
+        </LinearLayout>
+
+    </android.support.v7.widget.CardView>
+
+
+
+</LinearLayout>

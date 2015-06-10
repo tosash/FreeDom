@@ -8,12 +8,11 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.CardView;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
@@ -27,34 +26,37 @@ import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.google.gson.Gson;
 import com.kido.freedom.R;
-import com.kido.freedom.adapters.StripAdapter;
-import com.kido.freedom.model.ServerResponse.ServerStripResponse;
-import com.kido.freedom.model.Strip;
+import com.kido.freedom.imageindicator.network.NetworkImageIndicatorView;
+import com.kido.freedom.model.News;
+import com.kido.freedom.model.NewsImage;
+import com.kido.freedom.model.ServerResponse.ServerNewsResponse;
 import com.kido.freedom.utils.CustomSwype;
 import com.kido.freedom.utils.GsonRequest;
 import com.kido.freedom.utils.VolleySingleton;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class FragmentStrip extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
-    private static String API_GET_STRIP = "/GetTape?profileId=";
+public class FragmentNews extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
+    private static String API_GET_NEWS = "/GetDetailNews";
     private Activity mActivity;
     private Context fContext;
     private View rootView;
-    private RecyclerView recyclerView;
     private CardView cardView;
-    private List<Strip> strips;
-    private RecyclerView.Adapter mAdapter;
+    private News news;
     private CustomSwype mSwipeRefreshLayout;
-    private String TAG = FragmentStrip.class.toString();
-    private boolean mMeasured = false;
-    private boolean mPreMeasureRefreshing = false;
+    private String TAG = FragmentNews.class.toString();
     private boolean isTaskRunning = false;
+    private NetworkImageIndicatorView imageIndicatorView;
+    private TextView txtName;
+    private TextView txtDesc;
+    private long newsId;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -64,7 +66,8 @@ public class FragmentStrip extends Fragment implements SwipeRefreshLayout.OnRefr
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        rootView = inflater.inflate(R.layout.fragment_strip, container, false);
+        rootView = inflater.inflate(R.layout.fragment_news, container, false);
+        newsId = this.getArguments().getLong("NewsId");
         return rootView;
     }
 
@@ -76,17 +79,10 @@ public class FragmentStrip extends Fragment implements SwipeRefreshLayout.OnRefr
 
         fContext = getActivity().getApplicationContext();
         mActivity = (MainActivity) getActivity();
+        imageIndicatorView = (NetworkImageIndicatorView) rootView.findViewById(R.id.network_indicate_view);
+        txtName = (TextView) rootView.findViewById(R.id.txt_name);
+        txtDesc = (TextView) rootView.findViewById(R.id.txt_desc);
 
-        if (strips == null) {
-            strips = new ArrayList<Strip>();
-        }
-        recyclerView = (RecyclerView) rootView.findViewById(R.id.cardList);
-        recyclerView.setHasFixedSize(true);
-        LinearLayoutManager llm = new LinearLayoutManager(fContext);
-        llm.setOrientation(LinearLayoutManager.VERTICAL);
-        recyclerView.setLayoutManager(llm);
-        mAdapter = new StripAdapter(this.getFragmentManager(),strips);
-        recyclerView.setAdapter(mAdapter);
         mSwipeRefreshLayout = (CustomSwype) rootView.findViewById(R.id.id_swype);
         mSwipeRefreshLayout.setOnRefreshListener(this);
         mSwipeRefreshLayout.setColorSchemeColors(Color.rgb(255, 155, 30));
@@ -95,41 +91,57 @@ public class FragmentStrip extends Fragment implements SwipeRefreshLayout.OnRefr
             mSwipeRefreshLayout.setRefreshing(true);
         }
         if (savedInstanceState == null) {
-            getStripFromServer();
+            getNewsFromServer();
         } else {
             Gson gson = new Gson();
-            String s = savedInstanceState.getString("Strips");
-            Strip[] obj = gson.fromJson(s, Strip[].class);
-            List<Strip> sstrips = Arrays.asList(obj);
-            strips.addAll(sstrips);
-            mAdapter.notifyDataSetChanged();
+            String s = savedInstanceState.getString("News");
+            news = gson.fromJson(s, News.class);
+            showNews(news);
         }
 
     }
 
-    public void getStripFromServer() {
+    public void showNews(News mNews) {
+        final List<String> urlList = new ArrayList<String>();
+        for (NewsImage nIm : mNews.getnImages()) {
+            urlList.add(nIm.getMiniUrl());
+        }
+        imageIndicatorView.setupLayoutByImageUrl(fContext, urlList);
+        imageIndicatorView.show();
+        txtName.setText(mNews.getnName());
+        txtDesc.setText(mNews.getnDesc());
+
+    }
+
+    public void getNewsFromServer() {
 //        ((MainActivity) getActivity()).showProgressDialog();
         if (!isTaskRunning) {
             isTaskRunning = true;
             mSwipeRefreshLayout.setRefreshing(true);
-            Log.d(TAG, "Query: getStripFromServer: " + Long.toString(System.currentTimeMillis()));
+            Log.d(TAG, "Query: getNewsFromServer: " + Long.toString(System.currentTimeMillis()));
+            JSONObject params = new JSONObject();
+            try {
+                params.put("Id", newsId);
+                params.put("ProfileId", ((MainActivity) this.getActivity()).curDevice.getProfileId());
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
             VolleySingleton.getInstance(fContext).addToRequestQueue(
-                    new GsonRequest<ServerStripResponse>(Request.Method.GET,
-                            API_GET_STRIP + ((MainActivity) getActivity()).curDevice.getProfileId(),
-                            ServerStripResponse.class,
+                    new GsonRequest<ServerNewsResponse>(Request.Method.POST,
+                            API_GET_NEWS,
+                            ServerNewsResponse.class,
                             null,
-                            new Response.Listener<ServerStripResponse>() {
+                            new Response.Listener<ServerNewsResponse>() {
                                 @Override
-                                public void onResponse(ServerStripResponse response) {
+                                public void onResponse(ServerNewsResponse response) {
 //                                ((MainActivity) getActivity()).hideProgressDialog();
                                     isTaskRunning = false;
                                     mSwipeRefreshLayout.setRefreshing(false);
 //                                for (int i = 0; i < response.getValue().size(); i++) {
 //                                    response.getValue().
 //                                }
-                                    strips.clear();
-                                    strips.addAll(response.getValue());
-                                    mAdapter.notifyDataSetChanged();
+                                    news = response.getValue();
+                                    showNews(news);
                                 }
                             },
                             new Response.ErrorListener() {
@@ -152,13 +164,13 @@ public class FragmentStrip extends Fragment implements SwipeRefreshLayout.OnRefr
                                     }
                                 }
                             },
-                            null), TAG);
+                            params), TAG);
         }
     }
 
     @Override
     public void onRefresh() {
-        getStripFromServer();
+//        getNewsFromServer();
     }
 
     @Override
@@ -175,17 +187,16 @@ public class FragmentStrip extends Fragment implements SwipeRefreshLayout.OnRefr
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         Gson gson = new Gson();
-        String s = gson.toJson(strips);
-        outState.putString("Strips", s);
+        String s = gson.toJson(news);
+        outState.putString("News", s);
     }
 
 
     @Override
     public void onViewStateRestored(Bundle savedInstanceState) {
         Gson gson = new Gson();
-        String s = savedInstanceState.getString("Strips");
-        Strip[] obj = gson.fromJson(s, Strip[].class);
-        strips = Arrays.asList(obj);
+        String s = savedInstanceState.getString("News");
+        news = gson.fromJson(s, News.class);
         super.onViewStateRestored(savedInstanceState);
 
     }

@@ -43,8 +43,8 @@ import com.android.volley.VolleyError;
 import com.kido.freedom.R;
 import com.kido.freedom.adapters.CitiesAdapter;
 import com.kido.freedom.model.Cities;
-import com.kido.freedom.model.ServerRegistration;
-import com.kido.freedom.model.ServerResponseMessage;
+import com.kido.freedom.model.ServerResponse.ServerRegistration;
+import com.kido.freedom.model.ServerResponse.ServerResponseMessage;
 import com.kido.freedom.utils.CircularNetworkImageView;
 import com.kido.freedom.utils.GsonRequest;
 import com.kido.freedom.utils.Utils;
@@ -181,6 +181,7 @@ public class FragmentAccount extends Fragment {
     public void setProfilePhoto() {
         avatarChanged = false;
         avatarFragment = (CircularNetworkImageView) rootView.findViewById(R.id.imageView);
+        avatarFragment.setErrorImageResId(R.drawable.ic_no_user);
         avatarFragment.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

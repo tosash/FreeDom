@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+
+<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:layout_margin="5dp"
+    android:layout_marginLeft="5dp"
+    android:layout_marginRight="5dp"
+    android:layout_marginTop="5dp"
+    card_view:cardCornerRadius="0dp"
+    card_view:cardElevation="0dp"
+    card_view:cardUseCompatPadding="true"
+    card_view:contentPadding="0dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <com.kido.freedom.utils.CustomSwype xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/id_swype"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="4">
+
+            <TextView
+                android:id="@+id/txt_name"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_margin="5dp"
+                android:layout_marginRight="5dp"
+                android:alpha="0.8"
+
+                android:gravity="top|center"
+                android:textColor="#ff000000"
+                android:textSize="20dp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/txt_desc"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:layout_margin="5dp"
+                android:layout_marginBottom="5dp"
+                android:layout_marginLeft="5dp"
+
+                android:layout_marginRight="5dp"
+                android:layout_marginTop="5dp"
+
+                android:alpha="0.8"
+                android:elegantTextHeight="true"
+                android:textColor="#ff000000"
+                android:textIsSelectable="false"
+                android:textSize="17dp"
+                android:gravity="top|left" />
+        </com.kido.freedom.utils.CustomSwype>
+
+        <com.kido.freedom.imageindicator.network.NetworkImageIndicatorView
+            android:id="@+id/network_indicate_view"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_margin="5dp"
+            android:layout_weight="2"
+            android:gravity="center" />
+
+
+    </LinearLayout>
+
+</android.support.v7.widget.CardView>
+

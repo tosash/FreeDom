@@ -11,12 +11,10 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
-import android.support.annotation.Nullable;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.telephony.TelephonyManager;
-import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -44,10 +42,10 @@ import com.kido.freedom.drawer.NavigationDrawerCallbacks;
 import com.kido.freedom.drawer.NavigationDrawerFragment;
 import com.kido.freedom.model.Balance;
 import com.kido.freedom.model.Device;
-import com.kido.freedom.model.ServerAccountResponse;
-import com.kido.freedom.model.ServerBalance;
-import com.kido.freedom.model.ServerProfileResponse;
-import com.kido.freedom.model.ServerRegistration;
+import com.kido.freedom.model.ServerResponse.ServerAccountResponse;
+import com.kido.freedom.model.ServerResponse.ServerBalance;
+import com.kido.freedom.model.ServerResponse.ServerProfileResponse;
+import com.kido.freedom.model.ServerResponse.ServerRegistration;
 import com.kido.freedom.model.UserAccount;
 import com.kido.freedom.model.UserProfile;
 import com.kido.freedom.utils.CircularNetworkImageView;
@@ -143,6 +141,7 @@ public class MainActivity extends AppCompatActivity
         mCoins = (TextView) findViewById(R.id.textMoney);
         mPoints = (TextView) findViewById(R.id.textPoints);
         avatar = (CircularNetworkImageView) findViewById(R.id.imgAvatar);
+        avatar.setErrorImageResId(R.drawable.ic_no_user);
         avatar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -560,10 +559,11 @@ public class MainActivity extends AppCompatActivity
                     fragment = ((fragment == null) ? new FragmentStrip() : fragment);
                     break;
                 case 1:
-                    fragment = fragmentManager.findFragmentById(R.layout.fragment_account);
-                    fragment = ((fragment == null) ? new FragmentAccount() : fragment);
+                    fragment = fragmentManager.findFragmentById(R.layout.fragment_missions);
+                    fragment = ((fragment == null) ? new FragmentMissions() : fragment);
                     break;
             }
+            clearBackStack();
             fragmentManager.beginTransaction()
                     .replace(R.id.container, fragment)
                     .commit();

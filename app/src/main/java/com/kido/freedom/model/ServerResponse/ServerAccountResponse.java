@@ -1,11 +1,11 @@
-package com.kido.freedom.model;
+package com.kido.freedom.model.ServerResponse;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+import com.kido.freedom.model.UserAccount;
 
-import java.util.List;
 
-public class ServerStripResponse {
+public class ServerAccountResponse {
     @SerializedName("Message")
     @Expose(serialize = false, deserialize = true)
     private String message;
@@ -16,7 +16,7 @@ public class ServerStripResponse {
 
     @SerializedName("Value")
     @Expose(serialize = false, deserialize = true)
-    private List<Strip> value;
+    private UserAccount value;
 
     public String getMessage() {
         return message;
@@ -34,11 +34,11 @@ public class ServerStripResponse {
         this.statusResponse = statusResponse;
     }
 
-    public List<Strip> getValue() {
+    public UserAccount getValue() {
         return value;
     }
 
-    public void setValue(List<Strip> value) {
+    public void setValue(UserAccount value) {
         this.value = value;
     }
 }

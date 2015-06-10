@@ -1,15 +1,18 @@
 package com.kido.freedom.adapters;
 
+import android.app.FragmentManager;
+import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.kido.freedom.R;
 import com.kido.freedom.model.Strip;
+import com.kido.freedom.ui.FragmentNews;
 import com.kido.freedom.utils.CircularNetworkImageView;
 import com.kido.freedom.utils.Utils;
 import com.kido.freedom.utils.VolleySingleton;
@@ -17,10 +20,12 @@ import com.kido.freedom.utils.VolleySingleton;
 import java.util.List;
 
 public class StripAdapter extends RecyclerView.Adapter<StripAdapter.StripViewHolder> {
+    public long currID;
     private List<Strip> mItems;
+    private FragmentManager fm;
 
-    public StripAdapter(List<Strip> strips) {
-
+    public StripAdapter(FragmentManager f, List<Strip> strips) {
+        fm = f;
         mItems = strips;
     }
 
@@ -56,6 +61,15 @@ public class StripAdapter extends RecyclerView.Adapter<StripAdapter.StripViewHol
         }
     }
 
+    public Strip getItem(int position)
+    {
+        return mItems.get(position);
+    }
+    @Override
+    public long getItemId(int position) {
+        return mItems.get(position).getId();
+    }
+
     class StripViewHolder extends RecyclerView.ViewHolder {
 
         protected CircularNetworkImageView imgThumbnail;
@@ -64,7 +78,7 @@ public class StripAdapter extends RecyclerView.Adapter<StripAdapter.StripViewHol
         protected TextView txtDesc;
         protected TextView txtDate;
 
-        public StripViewHolder(View itemView) {
+        public StripViewHolder(final View itemView) {
             super(itemView);
             imgThumbnail = (CircularNetworkImageView) itemView.findViewById(R.id.img_thumbnail);
             imgNew = (ImageView) itemView.findViewById(R.id.img_new);
@@ -74,9 +88,25 @@ public class StripAdapter extends RecyclerView.Adapter<StripAdapter.StripViewHol
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    try {
+
+                        Bundle bundle = new Bundle();
+                        int pos=getLayoutPosition();
+                        bundle.putLong("NewsId", getItem(pos).getId());
+                        FragmentNews fragNews = new FragmentNews();
+                        fragNews.setArguments(bundle);
+                        fm.beginTransaction()
+//                                .add(R.id.container, fragNews)
+                                .replace(R.id.container, fragNews)
+                                .addToBackStack(null)
+                                .commit();
+                        ;
+                    } catch (Exception e) {
+                        Log.e("News", e.toString());
+                    }
 //                    Intent intent = new Intent(v.getContext(), SecondPage.class);
 //                    v.getContext().startActivity(intent);
-                    Toast.makeText(v.getContext(), "os version is: " + v.toString(), Toast.LENGTH_SHORT).show();
+//                    Toast.makeText(v.getContext(), "os version is: " + v.toString(), Toast.LENGTH_SHORT).show();
                 }
             });
         }
