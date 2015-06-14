@@ -3,6 +3,7 @@ package com.kido.freedom.ui;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.app.FragmentManager;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -95,7 +96,13 @@ public class FragmentNews extends Fragment implements SwipeRefreshLayout.OnRefre
         } else {
             Gson gson = new Gson();
             String s = savedInstanceState.getString("News");
-            news = gson.fromJson(s, News.class);
+            News obj = gson.fromJson(s, News.class);
+            if (obj == null) {
+                news = new News();
+            } else {
+                news = obj;
+            }
+
             showNews(news);
         }
 
@@ -140,8 +147,17 @@ public class FragmentNews extends Fragment implements SwipeRefreshLayout.OnRefre
 //                                for (int i = 0; i < response.getValue().size(); i++) {
 //                                    response.getValue().
 //                                }
-                                    news = response.getValue();
-                                    showNews(news);
+                                    if (response.getStatusResponse() == 0) {
+                                        news = response.getValue();
+                                        if (news == null) {
+                                            news = new News();
+                                        }
+                                        showNews(news);
+                                    } else {
+                                        Toast.makeText(fContext, response.getMessage(), Toast.LENGTH_SHORT).show();
+                                        FragmentManager fm = getFragmentManager();
+                                        fm.popBackStack();
+                                    }
                                 }
                             },
                             new Response.ErrorListener() {
@@ -196,7 +212,12 @@ public class FragmentNews extends Fragment implements SwipeRefreshLayout.OnRefre
     public void onViewStateRestored(Bundle savedInstanceState) {
         Gson gson = new Gson();
         String s = savedInstanceState.getString("News");
-        news = gson.fromJson(s, News.class);
+        News obj = gson.fromJson(s, News.class);
+        if (obj == null) {
+            news = new News();
+        } else {
+            news = obj;
+        }
         super.onViewStateRestored(savedInstanceState);
 
     }

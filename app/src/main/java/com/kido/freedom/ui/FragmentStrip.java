@@ -85,7 +85,7 @@ public class FragmentStrip extends Fragment implements SwipeRefreshLayout.OnRefr
         LinearLayoutManager llm = new LinearLayoutManager(fContext);
         llm.setOrientation(LinearLayoutManager.VERTICAL);
         recyclerView.setLayoutManager(llm);
-        mAdapter = new StripAdapter(this.getFragmentManager(),strips);
+        mAdapter = new StripAdapter(this.getFragmentManager(), strips);
         recyclerView.setAdapter(mAdapter);
         mSwipeRefreshLayout = (CustomSwype) rootView.findViewById(R.id.id_swype);
         mSwipeRefreshLayout.setOnRefreshListener(this);
@@ -97,10 +97,15 @@ public class FragmentStrip extends Fragment implements SwipeRefreshLayout.OnRefr
         if (savedInstanceState == null) {
             getStripFromServer();
         } else {
+            List<Strip> sstrips;
             Gson gson = new Gson();
             String s = savedInstanceState.getString("Strips");
             Strip[] obj = gson.fromJson(s, Strip[].class);
-            List<Strip> sstrips = Arrays.asList(obj);
+            if (obj == null) {
+                sstrips = new ArrayList<Strip>();
+            } else {
+                sstrips = Arrays.asList(obj);
+            }
             strips.addAll(sstrips);
             mAdapter.notifyDataSetChanged();
         }
@@ -185,7 +190,11 @@ public class FragmentStrip extends Fragment implements SwipeRefreshLayout.OnRefr
         Gson gson = new Gson();
         String s = savedInstanceState.getString("Strips");
         Strip[] obj = gson.fromJson(s, Strip[].class);
-        strips = Arrays.asList(obj);
+        if (obj == null) {
+            strips = new ArrayList<Strip>();
+        } else {
+            strips = Arrays.asList(obj);
+        }
         super.onViewStateRestored(savedInstanceState);
 
     }

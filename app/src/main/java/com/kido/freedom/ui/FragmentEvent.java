@@ -3,17 +3,17 @@ package com.kido.freedom.ui;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.app.FragmentManager;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.CardView;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
@@ -27,35 +27,37 @@ import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.google.gson.Gson;
 import com.kido.freedom.R;
-import com.kido.freedom.adapters.MissionsAdapter;
-import com.kido.freedom.model.Mission;
-import com.kido.freedom.model.ServerResponse.ServerMissionsResponse;
+import com.kido.freedom.imageindicator.network.NetworkImageIndicatorView;
+import com.kido.freedom.model.News;
+import com.kido.freedom.model.NewsImage;
+import com.kido.freedom.model.ServerResponse.ServerNewsResponse;
 import com.kido.freedom.utils.CustomSwype;
 import com.kido.freedom.utils.GsonRequest;
 import com.kido.freedom.utils.VolleySingleton;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class FragmentMissions extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
-    private static String API_GET_Missions = "/GetMission?profileId=";
+public class FragmentEvent extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
+    private static String API_GET_NEWS = "/GetDetailNews";
     private Activity mActivity;
     private Context fContext;
     private View rootView;
-    private RecyclerView recyclerView;
-    private RecyclerView tasksRecyclerView;
     private CardView cardView;
-    private CardView taskCardView;
-    private List<Mission> missions;
-    private RecyclerView.Adapter mAdapter;
-    private RecyclerView.Adapter mTasksAdapter;
+    private News news;
     private CustomSwype mSwipeRefreshLayout;
-    private String TAG = FragmentMissions.class.toString();
+    private String TAG = FragmentEvent.class.toString();
     private boolean isTaskRunning = false;
+    private NetworkImageIndicatorView imageIndicatorView;
+    private TextView txtName;
+    private TextView txtDesc;
+    private long newsId;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -65,7 +67,8 @@ public class FragmentMissions extends Fragment implements SwipeRefreshLayout.OnR
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        rootView = inflater.inflate(R.layout.fragment_missions, container, false);
+        rootView = inflater.inflate(R.layout.fragment_news, container, false);
+        newsId = this.getArguments().getLong("NewsId");
         return rootView;
     }
 
@@ -77,17 +80,10 @@ public class FragmentMissions extends Fragment implements SwipeRefreshLayout.OnR
 
         fContext = getActivity().getApplicationContext();
         mActivity = (MainActivity) getActivity();
+        imageIndicatorView = (NetworkImageIndicatorView) rootView.findViewById(R.id.network_indicate_view);
+        txtName = (TextView) rootView.findViewById(R.id.txt_name);
+        txtDesc = (TextView) rootView.findViewById(R.id.txt_desc);
 
-        if (missions == null) {
-            missions = new ArrayList<Mission>();
-        }
-        recyclerView = (RecyclerView) rootView.findViewById(R.id.cardList);
-        recyclerView.setHasFixedSize(true);
-        LinearLayoutManager llm = new LinearLayoutManager(fContext);
-        llm.setOrientation(LinearLayoutManager.VERTICAL);
-        recyclerView.setLayoutManager(llm);
-        mAdapter = new MissionsAdapter(missions);
-        recyclerView.setAdapter(mAdapter);
         mSwipeRefreshLayout = (CustomSwype) rootView.findViewById(R.id.id_swype);
         mSwipeRefreshLayout.setOnRefreshListener(this);
         mSwipeRefreshLayout.setColorSchemeColors(Color.rgb(255, 155, 30));
@@ -96,47 +92,72 @@ public class FragmentMissions extends Fragment implements SwipeRefreshLayout.OnR
             mSwipeRefreshLayout.setRefreshing(true);
         }
         if (savedInstanceState == null) {
-            getMissionsFromServer();
+            getNewsFromServer();
         } else {
             Gson gson = new Gson();
-            String s = savedInstanceState.getString("Missions");
-            Mission[] obj = gson.fromJson(s, Mission[].class);
-
-            List<Mission> sm;
+            String s = savedInstanceState.getString("News");
+            News obj = gson.fromJson(s, News.class);
             if (obj == null) {
-                sm = new ArrayList<Mission>();
+                news = new News();
             } else {
-                sm = Arrays.asList(obj);
+                news = obj;
             }
-            missions.addAll(sm);
-            mAdapter.notifyDataSetChanged();
+
+            showNews(news);
         }
 
     }
 
-    public void getMissionsFromServer() {
+    public void showNews(News mNews) {
+        final List<String> urlList = new ArrayList<String>();
+        for (NewsImage nIm : mNews.getnImages()) {
+            urlList.add(nIm.getMiniUrl());
+        }
+        imageIndicatorView.setupLayoutByImageUrl(fContext, urlList);
+        imageIndicatorView.show();
+        txtName.setText(mNews.getnName());
+        txtDesc.setText(mNews.getnDesc());
+
+    }
+
+    public void getNewsFromServer() {
 //        ((MainActivity) getActivity()).showProgressDialog();
         if (!isTaskRunning) {
             isTaskRunning = true;
             mSwipeRefreshLayout.setRefreshing(true);
-            Log.d(TAG, "Query: getMissionsFromServer: " + Long.toString(System.currentTimeMillis()));
+            Log.d(TAG, "Query: getNewsFromServer: " + Long.toString(System.currentTimeMillis()));
+            JSONObject params = new JSONObject();
+            try {
+                params.put("Id", newsId);
+                params.put("ProfileId", ((MainActivity) this.getActivity()).curDevice.getProfileId());
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
             VolleySingleton.getInstance(fContext).addToRequestQueue(
-                    new GsonRequest<ServerMissionsResponse>(Request.Method.GET,
-                            API_GET_Missions + ((MainActivity) getActivity()).curDevice.getProfileId(),
-                            ServerMissionsResponse.class,
+                    new GsonRequest<ServerNewsResponse>(Request.Method.POST,
+                            API_GET_NEWS,
+                            ServerNewsResponse.class,
                             null,
-                            new Response.Listener<ServerMissionsResponse>() {
+                            new Response.Listener<ServerNewsResponse>() {
                                 @Override
-                                public void onResponse(ServerMissionsResponse response) {
+                                public void onResponse(ServerNewsResponse response) {
 //                                ((MainActivity) getActivity()).hideProgressDialog();
                                     isTaskRunning = false;
                                     mSwipeRefreshLayout.setRefreshing(false);
 //                                for (int i = 0; i < response.getValue().size(); i++) {
 //                                    response.getValue().
 //                                }
-                                    missions.clear();
-                                    missions.add(response.getValue());//ADDALL FOR LIST
-                                    mAdapter.notifyDataSetChanged();
+                                    if (response.getStatusResponse() == 0) {
+                                        news = response.getValue();
+                                        if (news == null) {
+                                            news = new News();
+                                        }
+                                        showNews(news);
+                                    } else {
+                                        Toast.makeText(fContext, response.getMessage(), Toast.LENGTH_SHORT).show();
+                                        FragmentManager fm = getFragmentManager();
+                                        fm.popBackStack();
+                                    }
                                 }
                             },
                             new Response.ErrorListener() {
@@ -159,13 +180,13 @@ public class FragmentMissions extends Fragment implements SwipeRefreshLayout.OnR
                                     }
                                 }
                             },
-                            null), TAG);
+                            params), TAG);
         }
     }
 
     @Override
     public void onRefresh() {
-        getMissionsFromServer();
+//        getNewsFromServer();
     }
 
     @Override
@@ -182,21 +203,22 @@ public class FragmentMissions extends Fragment implements SwipeRefreshLayout.OnR
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         Gson gson = new Gson();
-        String s = gson.toJson(missions);
-        outState.putString("Missions", s);
+        String s = gson.toJson(news);
+        outState.putString("News", s);
     }
 
 
     @Override
     public void onViewStateRestored(Bundle savedInstanceState) {
         Gson gson = new Gson();
-        String s = savedInstanceState.getString("Missions");
-        Mission[] obj = gson.fromJson(s, Mission[].class);
+        String s = savedInstanceState.getString("News");
+        News obj = gson.fromJson(s, News.class);
         if (obj == null) {
-            missions = new ArrayList<Mission>();
+            news = new News();
         } else {
-            missions = Arrays.asList(obj);
+            news = obj;
         }
         super.onViewStateRestored(savedInstanceState);
+
     }
 }

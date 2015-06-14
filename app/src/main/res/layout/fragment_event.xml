@@ -24,6 +24,16 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1">
+            <com.kido.freedom.utils.CircularNetworkImageView
+                android:layout_width="200dp"
+                android:layout_height="200dp"
+                android:id="@+id/imageView"
+                android:layout_centerHorizontal="true"
+                android:layout_below="@+id/linearLayout4"
+                android:nestedScrollingEnabled="false" />
+
+        </com.kido.freedom.utils.CustomSwype>
+
 
 
             <LinearLayout
@@ -40,34 +50,37 @@
                     android:gravity="center_horizontal"
                     android:textColor="#ff000000"
                     android:textSize="20sp"
-                    android:textStyle="bold"/>
+                    android:textStyle="bold" />
+                <com.sothree.slidinguppanel.SlidingUpPanelLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                    xmlns:sothree="http://schemas.android.com/apk/res-auto"
+                    android:id="@+id/sliding_up"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="bottom"
+                    sothree:umanoPanelHeight="68dp"
+                    sothree:umanoShadowHeight="4dp">
                 <ScrollView
+                    android:id="@+id/scrollView"
                     android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/scrollView" >
-                <TextView
-                    android:id="@+id/txt_desc"
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="5dp"
-                    android:layout_marginBottom="5dp"
-                    android:layout_marginLeft="5dp"
-                    android:layout_marginRight="5dp"
-                    android:layout_marginTop="5dp"
-                    android:alpha="0.8"
-                    android:elegantTextHeight="true"
-                    android:gravity="left|center"/>
-                </ScrollView>
-            </LinearLayout>
-        </com.kido.freedom.utils.CustomSwype>
+                    android:layout_height="wrap_content">
 
-        <com.kido.freedom.imageindicator.network.NetworkImageIndicatorView
-            android:id="@+id/network_indicate_view"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:layout_margin="5dp"
-            android:gravity="center"
-            android:layout_weight="1" />
+                    <TextView
+                        android:id="@+id/txt_desc"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="5dp"
+                        android:layout_marginBottom="5dp"
+                        android:layout_marginLeft="5dp"
+                        android:layout_marginRight="5dp"
+                        android:layout_marginTop="5dp"
+                        android:alpha="0.8"
+                        android:elegantTextHeight="true"
+                        android:gravity="left|center" />
+                </ScrollView>
+                </com.sothree.slidinguppanel.SlidingUpPanelLayout>
+            </LinearLayout>
+
+
 
 
     </LinearLayout>
