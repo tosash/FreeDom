@@ -1,89 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-
-<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:card_view="http://schemas.android.com/apk/res-auto"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:layout_margin="5dp"
-    android:layout_marginLeft="5dp"
-    android:layout_marginRight="5dp"
-    android:layout_marginTop="5dp"
-    card_view:cardCornerRadius="0dp"
-    card_view:cardElevation="0dp"
-    card_view:cardUseCompatPadding="true"
-    card_view:contentPadding="0dp">
+<com.sothree.slidinguppanel.SlidingUpPanelLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:sothree="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/sliding_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="bottom"
+    sothree:umanoOverlay="false"
+    sothree:umanoPanelHeight="60dp"
+    sothree:umanoShadowHeight="4dp">
 
     <LinearLayout
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
         android:orientation="vertical">
 
-        <com.kido.freedom.utils.CustomSwype xmlns:android="http://schemas.android.com/apk/res/android"
-            android:id="@+id/id_swype"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1">
-            <com.kido.freedom.utils.CircularNetworkImageView
-                android:layout_width="200dp"
-                android:layout_height="200dp"
-                android:id="@+id/imageView"
-                android:layout_centerHorizontal="true"
-                android:layout_below="@+id/linearLayout4"
-                android:nestedScrollingEnabled="false" />
+        <com.kido.freedom.utils.CircularNetworkImageView
+            android:id="@+id/img_event"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"/>
 
-        </com.kido.freedom.utils.CustomSwype>
-
-
-
-            <LinearLayout
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/txt_name"
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="5dp"
-                    android:alpha="0.8"
-                    android:gravity="center_horizontal"
-                    android:textColor="#ff000000"
-                    android:textSize="20sp"
-                    android:textStyle="bold" />
-                <com.sothree.slidinguppanel.SlidingUpPanelLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                    xmlns:sothree="http://schemas.android.com/apk/res-auto"
-                    android:id="@+id/sliding_up"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:gravity="bottom"
-                    sothree:umanoPanelHeight="68dp"
-                    sothree:umanoShadowHeight="4dp">
-                <ScrollView
-                    android:id="@+id/scrollView"
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content">
-
-                    <TextView
-                        android:id="@+id/txt_desc"
-                        android:layout_width="fill_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_margin="5dp"
-                        android:layout_marginBottom="5dp"
-                        android:layout_marginLeft="5dp"
-                        android:layout_marginRight="5dp"
-                        android:layout_marginTop="5dp"
-                        android:alpha="0.8"
-                        android:elegantTextHeight="true"
-                        android:gravity="left|center" />
-                </ScrollView>
-                </com.sothree.slidinguppanel.SlidingUpPanelLayout>
-            </LinearLayout>
-
-
-
-
+        <TextView
+            android:id="@+id/txtNameEvent"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:textSize="16sp" />
     </LinearLayout>
 
-</android.support.v7.widget.CardView>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:gravity="center"
+        android:background="#1A464D"
+        android:orientation="vertical">
 
+        <TextView
+            android:id="@+id/txtDescEvent"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:textSize="16sp" />
+    </LinearLayout>
+
+</com.sothree.slidinguppanel.SlidingUpPanelLayout>

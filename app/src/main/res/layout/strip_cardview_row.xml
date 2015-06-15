@@ -12,9 +12,7 @@
         android:foreground="?android:attr/selectableItemBackground"
         android:layout_marginRight="5dp"
         android:layout_marginLeft="5dp"
-        android:layout_margin="5dp"
-        android:layout_marginTop="5dp">
-        card_view:cardCornerRadius="0dp"
+        card_view:cardCornerRadius="5dp"
         card_view:cardElevation="0dp"
         card_view:cardUseCompatPadding="true"
         card_view:contentPadding="0dp">
@@ -106,7 +104,9 @@
                 android:src="@drawable/ic_new"
                     android:layout_alignParentBottom="true"
                     android:layout_alignParentRight="true"
-                    android:layout_alignParentEnd="true" />
+                    android:layout_alignParentEnd="true"
+                    android:layout_marginRight="1dp"
+                    android:layout_marginBottom="1dp" />
 
             </RelativeLayout>
 

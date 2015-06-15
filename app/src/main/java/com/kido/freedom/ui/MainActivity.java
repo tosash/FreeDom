@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.content.res.Configuration;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -72,10 +71,10 @@ public class MainActivity extends AppCompatActivity
     private static String API_GETPROFILE_INFO = "/ProfileInfo?profileId=";
     private static String API_GET_BALANCE = "/GetBalanceByProfileId";
     private static String API_GET_ACCOUNT = "/GetPrivateInfo?profileId=";
-    public Device curDevice;
-    public UserProfile curUser;
-    public Balance curBalance;
-    public UserAccount curUAccount;
+    private static Device curDevice;
+    private static UserProfile curUser;
+    private static Balance curBalance;
+    private static UserAccount curUAccount;
     public CircularProgressView pDialog;
     public Context fContext = null;
     public Toolbar mToolbar;
@@ -100,9 +99,44 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    public static Device getCurDevice() {
+        return curDevice;
+    }
+
+    public static void setCurDevice(Device curDevice) {
+        MainActivity.curDevice = curDevice;
+    }
+
+    public static UserProfile getCurUser() {
+        return curUser;
+    }
+
+    public static void setCurUser(UserProfile curUser) {
+        MainActivity.curUser = curUser;
+    }
+
+    public static Balance getCurBalance() {
+        return curBalance;
+    }
+
+
+
+  public static void setCurBalance(Balance curBalance) {
+        MainActivity.curBalance = curBalance;
+    }
+
+    public static UserAccount getCurUAccount() {
+        return curUAccount;
+    }
+
+    public static void setCurUAccount(UserAccount curUAccount) {
+        MainActivity.curUAccount = curUAccount;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
         fContext = getApplicationContext();
 
@@ -134,8 +168,6 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-
-
     private void initDesign() {
         pDialog = (CircularProgressView) findViewById(R.id.progress_view);
         mCoins = (TextView) findViewById(R.id.textMoney);
@@ -148,8 +180,7 @@ public class MainActivity extends AppCompatActivity
                 try {
                     FragmentManager fragmentManager = getFragmentManager(); // For AppCompat use getSupportFragmentManager
                     fragmentManager.beginTransaction()
-                            .add(R.id.container, new FragmentStrip())
-//                            .replace(R.id.container, new FragmentAccount())
+                            .replace(R.id.container, new FragmentAccount())
                             .addToBackStack(null)
                             .commit();
                     mNavigationDrawerFragment.closeDrawer();
@@ -171,6 +202,10 @@ public class MainActivity extends AppCompatActivity
         curDevice.setpModelAndVersionDevice(getDeviceName());
         curDevice.setpDeviceId(getDeviceId());
         initGCM();
+
+    }
+
+    protected void GetDataFromServer(){
         getUserBalance();
         getProfileValues();
         getAccount();
@@ -181,16 +216,16 @@ public class MainActivity extends AppCompatActivity
         super.onSaveInstanceState(outState);
         String s;
         Gson gson = new Gson();
-         s = gson.toJson(curDevice);
+        s = gson.toJson(curDevice);
         outState.putString("Device", s);
-        s=gson.toJson(curBalance);
-        outState.putString("Balance",s);
-        s=gson.toJson(curUAccount);
-        outState.putString("Account",s);
-        s=gson.toJson(curUser);
-        outState.putString("Profile",s);
-        outState.putDouble("Money",curBalance.getMoney());
-        outState.putInt("Points",curBalance.getPoints());
+        s = gson.toJson(curBalance);
+        outState.putString("Balance", s);
+        s = gson.toJson(curUAccount);
+        outState.putString("Account", s);
+        s = gson.toJson(curUser);
+        outState.putString("Profile", s);
+        outState.putDouble("Money", curBalance.getMoney());
+        outState.putInt("Points", curBalance.getPoints());
     }
 
     @Override
@@ -204,14 +239,9 @@ public class MainActivity extends AppCompatActivity
         s = savedInstanceState.getString("Account");
         curUAccount = gson.fromJson(s, UserAccount.class);
         s = savedInstanceState.getString("Profile");
-        curUser = gson.fromJson(s,UserProfile.class);
+        curUser = gson.fromJson(s, UserProfile.class);
         super.onRestoreInstanceState(savedInstanceState);
 
-    }
-
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
     }
 
     public void showProgressDialog() {
@@ -227,7 +257,6 @@ public class MainActivity extends AppCompatActivity
             pDialog.setVisibility(View.INVISIBLE);
         }
     }
-
 
     public void getProfileValues() {
         showProgressDialog();
@@ -317,7 +346,6 @@ public class MainActivity extends AppCompatActivity
         setPropertyProfileId(fContext, answer.getValue());
         initDevice();
     }
-
 
     @Override
     public void onErrorResponse(VolleyError error) {
@@ -445,6 +473,10 @@ public class MainActivity extends AppCompatActivity
                 if (profileId.isEmpty()) {
                     makeRegisterPhone();
                 }
+                else
+                {
+                    GetDataFromServer();
+                }
             }
 
         } else {
@@ -455,6 +487,7 @@ public class MainActivity extends AppCompatActivity
     private String getSavedProfileId(Context context) {
         final SharedPreferences prefs = getGCMPreferences(context);
         String profileId = prefs.getString(PROPERTY_PROFILE_ID, "");
+        assert profileId != null;
         if (profileId.isEmpty()) {
             Log.d(TAG, "Profile ID not found.");
             return "";
@@ -467,9 +500,8 @@ public class MainActivity extends AppCompatActivity
         Log.i(TAG, "Saving ProfileId " + profileId);
         SharedPreferences.Editor editor = prefs.edit();
         editor.putString(PROPERTY_PROFILE_ID, profileId);
-        editor.commit();
+        editor.apply();
     }
-
 
     private void storeRegistrationId(Context context, String regId) {
         final SharedPreferences prefs = getGCMPreferences(context);
@@ -504,7 +536,6 @@ public class MainActivity extends AppCompatActivity
         return getSharedPreferences(MainActivity.class.getSimpleName(),
                 Context.MODE_PRIVATE);
     }
-
 
     private void registerInBackground() {
         showProgressDialog();
@@ -544,7 +575,6 @@ public class MainActivity extends AppCompatActivity
 
         }.execute(null, null, null);
     }
-
 
     @Override
     public void onNavigationDrawerItemSelected(int position, boolean fromSavedInstanceState) {
@@ -593,7 +623,6 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         if (!mNavigationDrawerFragment.isDrawerOpen()) {
@@ -605,7 +634,6 @@ public class MainActivity extends AppCompatActivity
         }
         return super.onCreateOptionsMenu(menu);
     }
-
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -637,4 +665,7 @@ public class MainActivity extends AppCompatActivity
 //            getSupportFragmentManager().popBackStackImmediate();
 //        }
     }
+
+
+
 }

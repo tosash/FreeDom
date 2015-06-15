@@ -45,12 +45,12 @@ import java.util.List;
  * A simple {@link Fragment} subclass.
  */
 public class FragmentNews extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
+    public static News news;
     private static String API_GET_NEWS = "/GetDetailNews";
     private Activity mActivity;
     private Context fContext;
     private View rootView;
     private CardView cardView;
-    private News news;
     private CustomSwype mSwipeRefreshLayout;
     private String TAG = FragmentNews.class.toString();
     private boolean isTaskRunning = false;
@@ -79,14 +79,15 @@ public class FragmentNews extends Fragment implements SwipeRefreshLayout.OnRefre
         super.onActivityCreated(savedInstanceState);
 
         fContext = getActivity().getApplicationContext();
-        mActivity = (MainActivity) getActivity();
+        mActivity = getActivity();
         imageIndicatorView = (NetworkImageIndicatorView) rootView.findViewById(R.id.network_indicate_view);
         txtName = (TextView) rootView.findViewById(R.id.txt_name);
         txtDesc = (TextView) rootView.findViewById(R.id.txt_desc);
 
         mSwipeRefreshLayout = (CustomSwype) rootView.findViewById(R.id.id_swype);
-        mSwipeRefreshLayout.setOnRefreshListener(this);
+        // mSwipeRefreshLayout.setOnRefreshListener(this);
         mSwipeRefreshLayout.setColorSchemeColors(Color.rgb(255, 155, 30));
+        mSwipeRefreshLayout.setEnabled(false);
 
         if (isTaskRunning) {
             mSwipeRefreshLayout.setRefreshing(true);
@@ -129,7 +130,7 @@ public class FragmentNews extends Fragment implements SwipeRefreshLayout.OnRefre
             JSONObject params = new JSONObject();
             try {
                 params.put("Id", newsId);
-                params.put("ProfileId", ((MainActivity) this.getActivity()).curDevice.getProfileId());
+                params.put("ProfileId", MainActivity.getCurDevice().getProfileId());
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -210,13 +211,15 @@ public class FragmentNews extends Fragment implements SwipeRefreshLayout.OnRefre
 
     @Override
     public void onViewStateRestored(Bundle savedInstanceState) {
-        Gson gson = new Gson();
-        String s = savedInstanceState.getString("News");
-        News obj = gson.fromJson(s, News.class);
-        if (obj == null) {
-            news = new News();
-        } else {
-            news = obj;
+        if (savedInstanceState != null) {
+            Gson gson = new Gson();
+            String s = savedInstanceState.getString("News");
+            News obj = gson.fromJson(s, News.class);
+            if (obj == null) {
+                news = new News();
+            } else {
+                news = obj;
+            }
         }
         super.onViewStateRestored(savedInstanceState);
 

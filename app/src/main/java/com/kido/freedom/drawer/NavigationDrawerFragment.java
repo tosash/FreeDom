@@ -30,6 +30,7 @@ import android.widget.TextView;
 
 import com.kido.freedom.R;
 import com.kido.freedom.model.UserProfile;
+import com.kido.freedom.ui.MainActivity;
 import com.kido.freedom.utils.CircularNetworkImageView;
 
 import java.util.ArrayList;
@@ -67,7 +68,7 @@ public class NavigationDrawerFragment extends Fragment implements NavigationDraw
     private RecyclerView mDrawerList;
     private View mFragmentContainerView;
 
-    private int mCurrentSelectedPosition = 0;
+    private int mCurrentSelectedPosition;
     private boolean mFromSavedInstanceState;
     private boolean mUserLearnedDrawer;
     private View view;
@@ -99,11 +100,11 @@ public class NavigationDrawerFragment extends Fragment implements NavigationDraw
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        mtxtUserColor=(TextView)view.findViewById(R.id.txtUserColor);
-        mtxtUsername=(TextView) view.findViewById(R.id.txtUsername);
-        mtxtStatus=(TextView) view.findViewById(R.id.txtStatus);
-        mPROGRESS_BAR=(ProgressBar) view.findViewById(R.id.PROGRESS_BAR);
-        avatarContainer=(CircularNetworkImageView)view.findViewById(R.id.imgAvatar);
+        mtxtUserColor = (TextView) view.findViewById(R.id.txtUserColor);
+        mtxtUsername = (TextView) view.findViewById(R.id.txtUsername);
+        mtxtStatus = (TextView) view.findViewById(R.id.txtStatus);
+        mPROGRESS_BAR = (ProgressBar) view.findViewById(R.id.PROGRESS_BAR);
+        avatarContainer = (CircularNetworkImageView) view.findViewById(R.id.imgAvatar);
         avatarContainer.setErrorImageResId(R.drawable.ic_no_user);
         mDrawerList = (RecyclerView) view.findViewById(R.id.drawerList);
         LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
@@ -127,7 +128,9 @@ public class NavigationDrawerFragment extends Fragment implements NavigationDraw
         }
 
         mFromSavedInstanceState = (savedInstanceState != null);
-        selectItem(mCurrentSelectedPosition,mFromSavedInstanceState);
+        if ((MainActivity.getCurDevice().getProfileId() != null) && (!(MainActivity.getCurDevice().getProfileId().isEmpty()))) {
+            selectItem(mCurrentSelectedPosition, mFromSavedInstanceState);
+        }
 
     }
 
@@ -219,7 +222,7 @@ public class NavigationDrawerFragment extends Fragment implements NavigationDraw
             mDrawerLayout.closeDrawer(mFragmentContainerView);
         }
         if (mCallbacks != null) {
-            mCallbacks.onNavigationDrawerItemSelected(position,fromSavedInstanceState);
+            mCallbacks.onNavigationDrawerItemSelected(position, fromSavedInstanceState);
         }
     }
 
@@ -251,8 +254,8 @@ public class NavigationDrawerFragment extends Fragment implements NavigationDraw
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putInt(STATE_SELECTED_POSITION, mCurrentSelectedPosition);
-        BitmapDrawable dr=(BitmapDrawable) avatarContainer.getDrawable();
-        Bitmap bm=(dr==null?null:dr.getBitmap());
+        BitmapDrawable dr = (BitmapDrawable) avatarContainer.getDrawable();
+        Bitmap bm = (dr == null ? null : dr.getBitmap());
         outState.putParcelable("Avatar", bm);
         outState.putString("UserLevel", mtxtUserColor.getText().toString());
         outState.putString("UserName", mtxtUsername.getText().toString());

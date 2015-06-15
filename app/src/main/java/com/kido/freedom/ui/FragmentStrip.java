@@ -43,12 +43,12 @@ import java.util.List;
  */
 public class FragmentStrip extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
     private static String API_GET_STRIP = "/GetTape?profileId=";
+    private static List<Strip> strips;
     private Activity mActivity;
     private Context fContext;
     private View rootView;
     private RecyclerView recyclerView;
     private CardView cardView;
-    private List<Strip> strips;
     private RecyclerView.Adapter mAdapter;
     private CustomSwype mSwipeRefreshLayout;
     private String TAG = FragmentStrip.class.toString();
@@ -97,16 +97,15 @@ public class FragmentStrip extends Fragment implements SwipeRefreshLayout.OnRefr
         if (savedInstanceState == null) {
             getStripFromServer();
         } else {
-            List<Strip> sstrips;
             Gson gson = new Gson();
             String s = savedInstanceState.getString("Strips");
             Strip[] obj = gson.fromJson(s, Strip[].class);
             if (obj == null) {
-                sstrips = new ArrayList<Strip>();
+                strips = new ArrayList<Strip>();
             } else {
-                sstrips = Arrays.asList(obj);
+                strips = new ArrayList<Strip>(Arrays.asList(obj));
             }
-            strips.addAll(sstrips);
+//            strips.addAll(sstrips);
             mAdapter.notifyDataSetChanged();
         }
 
@@ -120,7 +119,7 @@ public class FragmentStrip extends Fragment implements SwipeRefreshLayout.OnRefr
             Log.d(TAG, "Query: getStripFromServer: " + Long.toString(System.currentTimeMillis()));
             VolleySingleton.getInstance(fContext).addToRequestQueue(
                     new GsonRequest<ServerStripResponse>(Request.Method.GET,
-                            API_GET_STRIP + ((MainActivity) getActivity()).curDevice.getProfileId(),
+                            API_GET_STRIP + MainActivity.getCurDevice().getProfileId(),
                             ServerStripResponse.class,
                             null,
                             new Response.Listener<ServerStripResponse>() {
@@ -187,15 +186,16 @@ public class FragmentStrip extends Fragment implements SwipeRefreshLayout.OnRefr
 
     @Override
     public void onViewStateRestored(Bundle savedInstanceState) {
-        Gson gson = new Gson();
-        String s = savedInstanceState.getString("Strips");
-        Strip[] obj = gson.fromJson(s, Strip[].class);
-        if (obj == null) {
-            strips = new ArrayList<Strip>();
-        } else {
-            strips = Arrays.asList(obj);
+        if (savedInstanceState != null) {
+            Gson gson = new Gson();
+            String s = savedInstanceState.getString("Strips");
+            Strip[] obj = gson.fromJson(s, Strip[].class);
+            if (obj == null) {
+                strips = new ArrayList<Strip>();
+            } else {
+                strips = new ArrayList<Strip>(Arrays.asList(obj));
+            }
         }
         super.onViewStateRestored(savedInstanceState);
-
     }
 }

@@ -149,25 +149,25 @@ public class FragmentAccount extends Fragment {
         fContext = getActivity().getApplicationContext();
         mActivity = (MainActivity) this.getActivity();
         setProfilePhoto();
-        ArrayList<Cities> cities = ((MainActivity) this.getActivity()).curUAccount.getCities();
+        ArrayList<Cities> cities = MainActivity.getCurUAccount().getCities();
         CitiesAdapter adapter = new CitiesAdapter(getActivity(), android.R.layout.simple_spinner_item, cities);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         sItemsCity = (Spinner) rootView.findViewById(R.id.spinnerCity);
         sItemsCity.setAdapter(adapter);
-        sItemsCity.setSelection(cities.indexOf(((MainActivity) this.getActivity()).curUAccount.getIdCity()));
+        sItemsCity.setSelection(cities.indexOf(MainActivity.getCurUAccount().getIdCity()));
         sItemsGender = (Spinner) rootView.findViewById(R.id.spinnerGender);
-        sItemsGender.setSelection(((MainActivity) this.getActivity()).curUAccount.getGender());
+        sItemsGender.setSelection(MainActivity.getCurUAccount().getGender());
         sName = (EditText) rootView.findViewById(R.id.eName);
-        sName.setText(((MainActivity) this.getActivity()).curUAccount.getName());
+        sName.setText(MainActivity.getCurUAccount().getName());
         sBirthDay = (EditText) rootView.findViewById(R.id.eBirthday);
         String sDate =
-                (((MainActivity) this.getActivity()).curUAccount.getBirthday() == null ? "" :
-                        ((MainActivity) this.getActivity()).curUAccount.getBirthday().toString());
+                (MainActivity.getCurUAccount().getBirthday() == null ? "" :
+                        MainActivity.getCurUAccount().getBirthday());
         sBirthDay.setText(sDate);
         sEmail = (EditText) rootView.findViewById(R.id.eEmail);
-        sEmail.setText(((MainActivity) this.getActivity()).curUAccount.getEmail());
+        sEmail.setText(MainActivity.getCurUAccount().getEmail());
         sPhone = (EditText) rootView.findViewById(R.id.ePhone);
-        sPhone.setText(((MainActivity) this.getActivity()).curUAccount.getPhone());
+        sPhone.setText(MainActivity.getCurUAccount().getPhone());
 
         saveBtn = (Button) rootView.findViewById(R.id.btnSave);
         saveBtn.setOnClickListener(new View.OnClickListener() {
@@ -193,7 +193,7 @@ public class FragmentAccount extends Fragment {
 //            Bitmap bitmap = ((BitmapDrawable) ((MainActivity) getActivity()).avatar.getDrawable()).getBitmap();
 //            avatarFragment.setImageBitmap(bitmap);
 //        }
-    avatarFragment.setImageUrl(((MainActivity)getActivity()).curUAccount.getImage(),VolleySingleton.getInstance(fContext).getImageLoader());
+    avatarFragment.setImageUrl(MainActivity.getCurUAccount().getImage(),VolleySingleton.getInstance(fContext).getImageLoader());
     }
 
     private void selectImage() {
@@ -338,8 +338,7 @@ public class FragmentAccount extends Fragment {
         ByteArrayOutputStream ByteStream = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, ByteStream);
         byte[] b = ByteStream.toByteArray();
-        String temp = Base64.encodeToString(b, Base64.DEFAULT);
-        return temp;
+        return Base64.encodeToString(b, Base64.DEFAULT);
     }
 
     // date validation using SimpleDateFormat
@@ -385,7 +384,7 @@ public class FragmentAccount extends Fragment {
                 params = new JSONObject();
                 try {
                     params.put("ImageBase64", sImg64);
-                    params.put("ProfileId", ((MainActivity) this.getActivity()).curDevice.getProfileId());
+                    params.put("ProfileId", MainActivity.getCurDevice().getProfileId());
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -432,7 +431,7 @@ public class FragmentAccount extends Fragment {
                 params.put("CityId", ((Cities) sItemsCity.getSelectedItem()).getIdCity());
                 params.put("Email", sEmail.getText().toString());
                 params.put("Gender", sItemsGender.getSelectedItemPosition());
-                params.put("Id", ((MainActivity) getActivity()).curDevice.getProfileId());
+                params.put("Id", MainActivity.getCurDevice().getProfileId());
                 params.put("IsInvisible", true);
                 params.put("Name", sName.getText().toString());
                 params.put("Phone", sPhone.getText().toString());

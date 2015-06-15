@@ -1,5 +1,6 @@
 package com.kido.freedom.adapters;
 
+import android.app.Fragment;
 import android.app.FragmentManager;
 import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
@@ -12,6 +13,7 @@ import android.widget.TextView;
 
 import com.kido.freedom.R;
 import com.kido.freedom.model.Strip;
+import com.kido.freedom.ui.FragmentEvent;
 import com.kido.freedom.ui.FragmentNews;
 import com.kido.freedom.utils.CircularNetworkImageView;
 import com.kido.freedom.utils.Utils;
@@ -61,10 +63,10 @@ public class StripAdapter extends RecyclerView.Adapter<StripAdapter.StripViewHol
         }
     }
 
-    public Strip getItem(int position)
-    {
+    public Strip getItem(int position) {
         return mItems.get(position);
     }
+
     @Override
     public long getItemId(int position) {
         return mItems.get(position).getId();
@@ -91,13 +93,19 @@ public class StripAdapter extends RecyclerView.Adapter<StripAdapter.StripViewHol
                     try {
 
                         Bundle bundle = new Bundle();
-                        int pos=getLayoutPosition();
+                        int pos = getLayoutPosition();
                         bundle.putLong("NewsId", getItem(pos).getId());
-                        FragmentNews fragNews = new FragmentNews();
+                        Fragment fragNews = new Fragment();
+                        if (getItem(pos).getStripItemType() == 0) {
+                            fragNews = new FragmentNews();
+                        } else {
+                            fragNews = new FragmentEvent();
+                        }
                         fragNews.setArguments(bundle);
                         fm.beginTransaction()
 //                                .add(R.id.container, fragNews)
                                 .replace(R.id.container, fragNews)
+
                                 .addToBackStack(null)
                                 .commit();
                         ;

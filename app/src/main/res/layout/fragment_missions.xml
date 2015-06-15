@@ -5,9 +5,191 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/cardList"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:scrollbars="vertical" />
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:card_view="http://schemas.android.com/apk/res-auto"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:orientation="vertical"
+        android:background="@drawable/background">
+
+        <android.support.v7.widget.CardView
+            android:id="@+id/crd_mission"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:clickable="false"
+            android:layout_marginRight="5dp"
+            android:layout_marginLeft="5dp"
+            card_view:cardCornerRadius="15dp"
+            card_view:cardUseCompatPadding="true"
+            card_view:contentPadding="5dp"
+            android:layout_weight="1">
+
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+                <android.support.v7.widget.CardView
+                    android:id="@+id/crd_header"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:clickable="false"
+                    card_view:cardCornerRadius="15dp"
+                    card_view:cardUseCompatPadding="true"
+                    card_view:contentPadding="5dp"
+                    android:background="#FAC770">
+                <RelativeLayout
+                    android:orientation="horizontal"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:id="@+id/txt_name"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="20sp"
+                        android:layout_gravity="center_horizontal"
+                        android:textStyle="bold"
+                        android:textColor="#ff000000"
+                        android:textAlignment="gravity"
+                        android:gravity="left"
+                        android:layout_alignBottom="@+id/img_coins"
+                        android:layout_alignParentLeft="true"
+                        android:layout_alignParentStart="true"
+                        android:layout_toLeftOf="@+id/txt_points"
+                        android:layout_toStartOf="@+id/txt_points" />
+
+                    <TextView
+                        android:id="@+id/txt_points"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:paddingLeft="@dimen/activity_horizontal_margin"
+                        android:paddingRight="@dimen/activity_horizontal_margin"
+                        android:textSize="20sp"
+                        android:textColor="#ff000000"
+                        android:layout_gravity="top|left"
+                        android:textAlignment="viewEnd"
+                        android:gravity="right"
+                        android:layout_alignBottom="@+id/img_coins"
+                        android:layout_toLeftOf="@+id/img_coins"
+                        android:layout_toStartOf="@+id/img_coins" />
+
+                    <ImageView
+                        android:id="@+id/img_coins"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:src="@drawable/coins"
+                        android:layout_gravity="top|left"
+                        android:layout_alignParentTop="true"
+                        android:layout_alignParentRight="true"
+                        android:layout_alignParentEnd="true"
+                        android:layout_marginLeft="0dp" />
+
+                </RelativeLayout>
+                </android.support.v7.widget.CardView>
+                <android.support.v7.widget.RecyclerView
+                    android:id="@+id/tasksList"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:scrollbars="vertical"
+                    android:layout_marginLeft="5dp"
+                    android:layout_marginRight="5dp" />
+
+            </LinearLayout>
+
+        </android.support.v7.widget.CardView>
+        <android.support.v7.widget.CardView
+            android:id="@+id/crd_Next"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:clickable="false"
+            android:layout_marginRight="5dp"
+            android:layout_marginLeft="5dp"
+            card_view:cardCornerRadius="15dp"
+            card_view:cardUseCompatPadding="true"
+            card_view:contentPadding="5dp"
+            android:layout_weight="2"
+            android:background="@drawable/bk_mission">
+
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+                <android.support.v7.widget.CardView
+                    android:id="@+id/crd_headerNext"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:clickable="false"
+                    card_view:cardCornerRadius="15dp"
+                    card_view:cardUseCompatPadding="true"
+                    card_view:contentPadding="5dp"
+                    android:background="#FAC770">
+                    <RelativeLayout
+                        android:orientation="horizontal"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content">
+
+                        <TextView
+                            android:id="@+id/txt_nameNext"
+                            android:layout_width="fill_parent"
+                            android:layout_height="wrap_content"
+                            android:textSize="20sp"
+                            android:layout_gravity="center_horizontal"
+                            android:textStyle="bold"
+                            android:textColor="#ff000000"
+                            android:textAlignment="gravity"
+                            android:gravity="left"
+                            android:layout_alignBottom="@+id/img_coinsNext"
+                            android:layout_alignParentLeft="true"
+                            android:layout_alignParentStart="true"
+                            android:layout_toLeftOf="@+id/txt_pointsNext"
+                            android:layout_toStartOf="@+id/txt_pointsNext" />
+
+                        <TextView
+                            android:id="@+id/txt_pointsNext"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:paddingLeft="@dimen/activity_horizontal_margin"
+                            android:paddingRight="@dimen/activity_horizontal_margin"
+                            android:textSize="20sp"
+                            android:textColor="#ff000000"
+                            android:layout_gravity="top|left"
+                            android:textAlignment="viewEnd"
+                            android:gravity="right"
+                            android:layout_alignBottom="@+id/img_coinsNext"
+                            android:layout_toLeftOf="@+id/img_coinsNext"
+                            android:layout_toStartOf="@+id/img_coinsNext" />
+
+                        <ImageView
+                            android:id="@+id/img_coinsNext"
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            android:src="@drawable/coins"
+                            android:layout_gravity="top|left"
+                            android:layout_alignParentTop="true"
+                            android:layout_alignParentRight="true"
+                            android:layout_alignParentEnd="true"
+                            android:layout_marginLeft="0dp" />
+
+                    </RelativeLayout>
+                </android.support.v7.widget.CardView>
+                <ImageView
+                    android:id="@+id/img_nextMission"
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:src="@drawable/ic_block"
+                    android:scaleType="fitCenter"
+                    android:layout_gravity="top|left"
+                    android:layout_alignParentTop="true"
+                    android:layout_alignParentRight="true"
+                    android:layout_alignParentEnd="true"
+                    android:layout_margin="3dp" />
+
+            </LinearLayout>
+
+        </android.support.v7.widget.CardView>
+
+
+    </LinearLayout>
 </com.kido.freedom.utils.CustomSwype>
+
+

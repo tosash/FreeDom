@@ -5,9 +5,7 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Context;
-import android.graphics.Color;
 import android.os.Bundle;
-import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.CardView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -27,37 +25,33 @@ import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.google.gson.Gson;
 import com.kido.freedom.R;
-import com.kido.freedom.imageindicator.network.NetworkImageIndicatorView;
-import com.kido.freedom.model.News;
-import com.kido.freedom.model.NewsImage;
-import com.kido.freedom.model.ServerResponse.ServerNewsResponse;
-import com.kido.freedom.utils.CustomSwype;
+import com.kido.freedom.model.Event;
+import com.kido.freedom.model.ServerResponse.ServerEventResponse;
+import com.kido.freedom.utils.CircularNetworkImageView;
 import com.kido.freedom.utils.GsonRequest;
 import com.kido.freedom.utils.VolleySingleton;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * A simple {@link Fragment} subclass.
  */
-public class FragmentEvent extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
-    private static String API_GET_NEWS = "/GetDetailNews";
+public class FragmentEvent extends Fragment {
+    public static Event event;
+    //        implements SwipeRefreshLayout.OnRefreshListener {
+    private static String API_GET_NEWS = "/GetDetailEvent";
     private Activity mActivity;
     private Context fContext;
     private View rootView;
     private CardView cardView;
-    private News news;
-    private CustomSwype mSwipeRefreshLayout;
+    //    private CustomSwype mSwipeRefreshLayout;
     private String TAG = FragmentEvent.class.toString();
     private boolean isTaskRunning = false;
-    private NetworkImageIndicatorView imageIndicatorView;
     private TextView txtName;
     private TextView txtDesc;
-    private long newsId;
+    private CircularNetworkImageView imgEvent;
+    private long eventId;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -67,8 +61,8 @@ public class FragmentEvent extends Fragment implements SwipeRefreshLayout.OnRefr
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        rootView = inflater.inflate(R.layout.fragment_news, container, false);
-        newsId = this.getArguments().getLong("NewsId");
+        rootView = inflater.inflate(R.layout.fragment_event, container, false);
+        eventId = this.getArguments().getLong("NewsId");
         return rootView;
     }
 
@@ -80,79 +74,72 @@ public class FragmentEvent extends Fragment implements SwipeRefreshLayout.OnRefr
 
         fContext = getActivity().getApplicationContext();
         mActivity = (MainActivity) getActivity();
-        imageIndicatorView = (NetworkImageIndicatorView) rootView.findViewById(R.id.network_indicate_view);
-        txtName = (TextView) rootView.findViewById(R.id.txt_name);
-        txtDesc = (TextView) rootView.findViewById(R.id.txt_desc);
+        txtName = (TextView) rootView.findViewById(R.id.txtNameEvent);
+        txtDesc = (TextView) rootView.findViewById(R.id.txtDescEvent);
+        imgEvent = (CircularNetworkImageView) rootView.findViewById(R.id.img_event);
+        imgEvent.setCircled(false);
 
-        mSwipeRefreshLayout = (CustomSwype) rootView.findViewById(R.id.id_swype);
-        mSwipeRefreshLayout.setOnRefreshListener(this);
-        mSwipeRefreshLayout.setColorSchemeColors(Color.rgb(255, 155, 30));
-
-        if (isTaskRunning) {
-            mSwipeRefreshLayout.setRefreshing(true);
-        }
+//        mSwipeRefreshLayout = (CustomSwype) rootView.findViewById(R.id.id_swype);
+//        mSwipeRefreshLayout.setOnRefreshListener(this);
+//        mSwipeRefreshLayout.setColorSchemeColors(Color.rgb(255, 155, 30));
+//
+//        if (isTaskRunning) {
+//            mSwipeRefreshLayout.setRefreshing(true);
+//        }
         if (savedInstanceState == null) {
-            getNewsFromServer();
+            getEventFromServer();
         } else {
             Gson gson = new Gson();
-            String s = savedInstanceState.getString("News");
-            News obj = gson.fromJson(s, News.class);
+            String s = savedInstanceState.getString("Event");
+            Event obj = gson.fromJson(s, Event.class);
             if (obj == null) {
-                news = new News();
+                event = new Event();
             } else {
-                news = obj;
+                event = obj;
             }
 
-            showNews(news);
+            showEvent(event);
         }
 
     }
 
-    public void showNews(News mNews) {
-        final List<String> urlList = new ArrayList<String>();
-        for (NewsImage nIm : mNews.getnImages()) {
-            urlList.add(nIm.getMiniUrl());
-        }
-        imageIndicatorView.setupLayoutByImageUrl(fContext, urlList);
-        imageIndicatorView.show();
-        txtName.setText(mNews.getnName());
-        txtDesc.setText(mNews.getnDesc());
+    public void showEvent(Event mEvent) {
+        txtName.setText(mEvent.geteName());
+        txtDesc.setText(mEvent.geteDesc());
+        imgEvent.setImageUrl(mEvent.geteImage(), VolleySingleton.getInstance(fContext).getImageLoader());
 
     }
 
-    public void getNewsFromServer() {
+    public void getEventFromServer() {
 //        ((MainActivity) getActivity()).showProgressDialog();
         if (!isTaskRunning) {
             isTaskRunning = true;
-            mSwipeRefreshLayout.setRefreshing(true);
-            Log.d(TAG, "Query: getNewsFromServer: " + Long.toString(System.currentTimeMillis()));
+//            mSwipeRefreshLayout.setRefreshing(true);
+            Log.d(TAG, "Query: getEventFromServer: " + Long.toString(System.currentTimeMillis()));
             JSONObject params = new JSONObject();
             try {
-                params.put("Id", newsId);
-                params.put("ProfileId", ((MainActivity) this.getActivity()).curDevice.getProfileId());
+                params.put("Id", eventId);
+                params.put("ProfileId", MainActivity.getCurDevice().getProfileId());
             } catch (JSONException e) {
                 e.printStackTrace();
             }
             VolleySingleton.getInstance(fContext).addToRequestQueue(
-                    new GsonRequest<ServerNewsResponse>(Request.Method.POST,
+                    new GsonRequest<ServerEventResponse>(Request.Method.POST,
                             API_GET_NEWS,
-                            ServerNewsResponse.class,
+                            ServerEventResponse.class,
                             null,
-                            new Response.Listener<ServerNewsResponse>() {
+                            new Response.Listener<ServerEventResponse>() {
                                 @Override
-                                public void onResponse(ServerNewsResponse response) {
-//                                ((MainActivity) getActivity()).hideProgressDialog();
+                                public void onResponse(ServerEventResponse response) {
                                     isTaskRunning = false;
-                                    mSwipeRefreshLayout.setRefreshing(false);
-//                                for (int i = 0; i < response.getValue().size(); i++) {
-//                                    response.getValue().
-//                                }
+//                                    mSwipeRefreshLayout.setRefreshing(false);
                                     if (response.getStatusResponse() == 0) {
-                                        news = response.getValue();
-                                        if (news == null) {
-                                            news = new News();
+                                        event = response.getValue();
+                                        if (event == null) {
+                                            event = new Event();
                                         }
-                                        showNews(news);
+
+                                        showEvent(event);
                                     } else {
                                         Toast.makeText(fContext, response.getMessage(), Toast.LENGTH_SHORT).show();
                                         FragmentManager fm = getFragmentManager();
@@ -165,7 +152,7 @@ public class FragmentEvent extends Fragment implements SwipeRefreshLayout.OnRefr
                                 public void onErrorResponse(VolleyError error) {
 //                                ((MainActivity) getActivity()).hideProgressDialog();
                                     isTaskRunning = false;
-                                    mSwipeRefreshLayout.setRefreshing(false);
+//                                    mSwipeRefreshLayout.setRefreshing(false);
                                     Log.e(TAG, "err: " + error.toString());
                                     if (error instanceof TimeoutError || error instanceof NoConnectionError) {
                                         Toast.makeText(fContext, "TimeOut Error", Toast.LENGTH_LONG).show();
@@ -184,18 +171,14 @@ public class FragmentEvent extends Fragment implements SwipeRefreshLayout.OnRefr
         }
     }
 
-    @Override
-    public void onRefresh() {
-//        getNewsFromServer();
-    }
 
     @Override
     public void onDetach() {
-        if (mSwipeRefreshLayout != null && mSwipeRefreshLayout.isShown()) {
-            mSwipeRefreshLayout.setRefreshing(false);
-            VolleySingleton.getInstance(fContext).cancelPendingRequests(TAG);
-
-        }
+//        if (mSwipeRefreshLayout != null && mSwipeRefreshLayout.isShown()) {
+//            mSwipeRefreshLayout.setRefreshing(false);
+//            VolleySingleton.getInstance(fContext).cancelPendingRequests(TAG);
+//
+//        }
         super.onDetach();
     }
 
@@ -203,20 +186,22 @@ public class FragmentEvent extends Fragment implements SwipeRefreshLayout.OnRefr
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         Gson gson = new Gson();
-        String s = gson.toJson(news);
-        outState.putString("News", s);
+        String s = gson.toJson(event);
+        outState.putString("Event", s);
     }
 
 
     @Override
     public void onViewStateRestored(Bundle savedInstanceState) {
-        Gson gson = new Gson();
-        String s = savedInstanceState.getString("News");
-        News obj = gson.fromJson(s, News.class);
-        if (obj == null) {
-            news = new News();
-        } else {
-            news = obj;
+        if (savedInstanceState != null) {
+            Gson gson = new Gson();
+            String s = savedInstanceState.getString("Event");
+            Event obj = gson.fromJson(s, Event.class);
+            if (obj == null) {
+                event = new Event();
+            } else {
+                event = obj;
+            }
         }
         super.onViewStateRestored(savedInstanceState);
 
